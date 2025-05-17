@@ -1,7 +1,5 @@
 # Tatou - A2A TypeScript Implementation
 
-> **Note:** This package is ESM-only. It does not support CommonJS (`require`). Use `import`/`export` syntax and Node.js 16+ or a compatible bundler.
-
 A TypeScript implementation of the Agent-to-Agent (A2A) protocol, enabling seamless communication and interoperability between AI agents. This implementation is based on [Google's A2A Protocol](https://github.com/google/A2A).
 
 ## Overview
