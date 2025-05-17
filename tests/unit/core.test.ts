@@ -46,6 +46,28 @@ describe('Core Implementation', () => {
     expect(typeof task.toJSON()).toBe('object');
   });
 
+  it('should handle push notification configuration', () => {
+    const pushConfig = {
+      url: 'https://client.example.com/webhook',
+      token: 'secure-token',
+      authentication: { schemes: ['Bearer'] }
+    };
+
+    // Test constructor with push notification
+    const task = new Task({ pushNotification: pushConfig });
+    expect(task.getPushNotification()).toEqual(pushConfig);
+
+    // Test setting push notification after creation
+    const task2 = new Task({});
+    expect(task2.getPushNotification()).toBeUndefined();
+    task2.setPushNotification(pushConfig);
+    expect(task2.getPushNotification()).toEqual(pushConfig);
+
+    // Test push notification in JSON output
+    const json = task2.toJSON();
+    expect(json.pushNotification).toEqual(pushConfig);
+  });
+
   it('should start a task via Agent and return a Task', async () => {
     const transport = {
       connect: vi.fn().mockResolvedValue(undefined),
@@ -466,5 +488,369 @@ describe('Core Implementation', () => {
     agent.on('testEvent', listener);
     agent.emit('testEvent', 'testData');
     expect(listener).toHaveBeenCalledWith('testData');
+  });
+
+  describe('Push Notification Support', () => {
+    it('should set push notification config for a task', async () => {
+      const transport = {
+        connect: vi.fn().mockResolvedValue(undefined),
+        disconnect: vi.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockResolvedValue(undefined),
+        receive: vi.fn().mockResolvedValue({ 
+          result: { 
+            url: 'https://client.example.com/webhook',
+            token: 'secure-token',
+            authentication: { schemes: ['Bearer'] }
+          } 
+        }),
+        config: { protocol: 'ws', host: 'localhost' }
+      } as unknown as Transport;
+
+      const agent = new Agent({
+        name: 'TestAgent',
+        description: 'A test agent',
+        capabilities: { ...defaultCapabilities, pushNotifications: true },
+        endpoint: 'ws://localhost',
+        version: '1.0.0'
+      }, transport);
+
+      const config = {
+        url: 'https://client.example.com/webhook',
+        token: 'secure-token',
+        authentication: { schemes: ['Bearer'] }
+      };
+
+      const result = await agent.setPushNotification('task-1', config);
+      expect(result).toEqual(config);
+    });
+
+    it('should get push notification config for a task', async () => {
+      const config = {
+        url: 'https://client.example.com/webhook',
+        token: 'secure-token',
+        authentication: { schemes: ['Bearer'] }
+      };
+
+      const transport = {
+        connect: vi.fn().mockResolvedValue(undefined),
+        disconnect: vi.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockResolvedValue(undefined),
+        receive: vi.fn().mockResolvedValue({ result: config }),
+        config: { protocol: 'ws', host: 'localhost' }
+      } as unknown as Transport;
+
+      const agent = new Agent({
+        name: 'TestAgent',
+        description: 'A test agent',
+        capabilities: { ...defaultCapabilities, pushNotifications: true },
+        endpoint: 'ws://localhost',
+        version: '1.0.0'
+      }, transport);
+
+      const result = await agent.getPushNotification('task-1');
+      expect(result).toEqual(config);
+    });
+
+    it('should throw error if push notifications not supported', async () => {
+      const transport = {
+        connect: vi.fn().mockResolvedValue(undefined),
+        disconnect: vi.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockResolvedValue(undefined),
+        receive: vi.fn().mockResolvedValue({ result: {} }),
+        config: { protocol: 'ws', host: 'localhost' }
+      } as unknown as Transport;
+
+      const agent = new Agent({
+        name: 'TestAgent',
+        description: 'A test agent',
+        capabilities: { ...defaultCapabilities, pushNotifications: false },
+        endpoint: 'ws://localhost',
+        version: '1.0.0'
+      }, transport);
+
+      const config = {
+        url: 'https://client.example.com/webhook',
+        token: 'secure-token'
+      };
+
+      await expect(agent.setPushNotification('task-1', config))
+        .rejects.toThrow('Push notifications are not supported by this agent');
+      await expect(agent.getPushNotification('task-1'))
+        .rejects.toThrow('Push notifications are not supported by this agent');
+    });
+
+    it('should cancel a task', async () => {
+      const transport = {
+        connect: vi.fn().mockResolvedValue(undefined),
+        disconnect: vi.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockResolvedValue(undefined),
+        receive: vi.fn().mockResolvedValue({ 
+          result: { 
+            id: 'task-1',
+            status: { state: 'canceled' },
+            content: { type: 'text', content: 'foo' },
+            createdAt: now,
+            updatedAt: now
+          } 
+        }),
+        config: { protocol: 'ws', host: 'localhost' }
+      } as unknown as Transport;
+
+      const agent = new Agent({
+        name: 'TestAgent',
+        description: 'A test agent',
+        capabilities: defaultCapabilities,
+        endpoint: 'ws://localhost',
+        version: '1.0.0'
+      }, transport);
+
+      const task = await agent.cancelTask('task-1');
+      expect(task.id).toBe('task-1');
+      expect(task.status.state).toBe('canceled');
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should handle different error codes in startTask', async () => {
+      const transport = {
+        connect: vi.fn().mockResolvedValue(undefined),
+        disconnect: vi.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockResolvedValue(undefined),
+        receive: vi.fn().mockResolvedValue({ 
+          error: { 
+            code: 404, 
+            message: 'Task not found',
+            data: { taskId: '1' }
+          } 
+        }),
+        config: { protocol: 'ws', host: 'localhost' }
+      } as unknown as Transport;
+      const agent = new Agent({
+        name: 'TestAgent',
+        description: 'A test agent',
+        capabilities: defaultCapabilities,
+        endpoint: 'ws://localhost',
+        version: '1.0.0'
+      }, transport);
+      await expect(agent.startTask({ content: { type: 'text', content: 'foo' } }))
+        .rejects.toThrow('Failed to start task: Task not found');
+    });
+
+    it('should handle different error codes in getTaskStatus', async () => {
+      const transport = {
+        connect: vi.fn().mockResolvedValue(undefined),
+        disconnect: vi.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockResolvedValue(undefined),
+        receive: vi.fn().mockResolvedValue({ 
+          error: { 
+            code: 403, 
+            message: 'Access denied',
+            data: { reason: 'insufficient permissions' }
+          } 
+        }),
+        config: { protocol: 'ws', host: 'localhost' }
+      } as unknown as Transport;
+      const agent = new Agent({
+        name: 'TestAgent',
+        description: 'A test agent',
+        capabilities: defaultCapabilities,
+        endpoint: 'ws://localhost',
+        version: '1.0.0'
+      }, transport);
+      await expect(agent.getTaskStatus('1'))
+        .rejects.toThrow('Failed to get task status: Access denied');
+    });
+
+    it('should handle different error codes in listTasks', async () => {
+      const transport = {
+        connect: vi.fn().mockResolvedValue(undefined),
+        disconnect: vi.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockResolvedValue(undefined),
+        receive: vi.fn().mockResolvedValue({ 
+          error: { 
+            code: 500, 
+            message: 'Internal server error',
+            data: { details: 'Database connection failed' }
+          } 
+        }),
+        config: { protocol: 'ws', host: 'localhost' }
+      } as unknown as Transport;
+      const agent = new Agent({
+        name: 'TestAgent',
+        description: 'A test agent',
+        capabilities: defaultCapabilities,
+        endpoint: 'ws://localhost',
+        version: '1.0.0'
+      }, transport);
+      await expect(agent.listTasks())
+        .rejects.toThrow('Failed to list tasks: Internal server error');
+    });
+
+    it('should handle transport errors in task operations', async () => {
+      const transport = {
+        connect: vi.fn().mockRejectedValue(new Error('Connection failed')),
+        disconnect: vi.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockResolvedValue(undefined),
+        receive: vi.fn().mockResolvedValue({}),
+        config: { protocol: 'ws', host: 'localhost' }
+      } as unknown as Transport;
+      const agent = new Agent({
+        name: 'TestAgent',
+        description: 'A test agent',
+        capabilities: defaultCapabilities,
+        endpoint: 'ws://localhost',
+        version: '1.0.0'
+      }, transport);
+      await expect(agent.startTask({ content: { type: 'text', content: 'foo' } }))
+        .rejects.toThrow('Connection failed');
+    });
+  });
+
+  describe('Transport Error Handling', () => {
+    it('should handle SSE message parsing errors', async () => {
+      let listener: ((event: any) => void) | null = null;
+      class FakeEventSource {
+        addEventListener(event: string, cb: any) { listener = cb; }
+        removeEventListener() { }
+        close() { }
+      }
+      // @ts-ignore
+      global.EventSource = FakeEventSource;
+      const t = new Transport({ protocol: 'sse', host: 'localhost' });
+      await t.connect();
+      const receivePromise = t.receive();
+      listener!({ data: 'invalid-json' });
+      await expect(receivePromise).rejects.toThrow();
+      await t.disconnect();
+    });
+
+    it('should handle WebSocket message parsing errors', async () => {
+      let onmessage: ((event: any) => void) | null = null;
+      class FakeWebSocket {
+        onopen: (() => void) | null = null;
+        onerror: ((err: any) => void) | null = null;
+        onmessage: ((event: any) => void) | null = null;
+        close = vi.fn();
+        send = vi.fn();
+        constructor() {
+          setTimeout(() => {
+            if (this.onopen) this.onopen();
+          }, 0);
+        }
+      }
+      // @ts-ignore
+      global.WebSocket = FakeWebSocket;
+      const t = new Transport({ protocol: 'ws', host: 'localhost' });
+      await t.connect();
+      // @ts-ignore
+      t.connection = new FakeWebSocket();
+      const receivePromise = t.receive();
+      // @ts-ignore
+      t.connection.onmessage({ data: 'invalid-json' });
+      await expect(receivePromise).rejects.toThrow();
+      // Clean up
+      // @ts-ignore
+      delete global.WebSocket;
+    });
+
+    it('should handle WebSocket send errors', async () => {
+      class FakeWebSocket {
+        onopen: (() => void) | null = null;
+        onerror: ((err: any) => void) | null = null;
+        close = vi.fn();
+        send = vi.fn().mockImplementation(() => {
+          throw new Error('Send failed');
+        });
+        constructor() {
+          setTimeout(() => {
+            if (this.onopen) this.onopen();
+          }, 0);
+        }
+      }
+      // @ts-ignore
+      global.WebSocket = FakeWebSocket;
+      const t = new Transport({ protocol: 'ws', host: 'localhost' });
+      await t.connect();
+      // @ts-ignore
+      t.connection = new FakeWebSocket();
+      await expect(t.send({} as any)).rejects.toThrow('Send failed');
+      // Clean up
+      // @ts-ignore
+      delete global.WebSocket;
+    });
+
+    it('should handle connection state validation', async () => {
+      const t = new Transport({ protocol: 'ws', host: 'localhost' });
+      await expect(t.send({} as any)).rejects.toThrow('Not connected');
+      await expect(t.receive()).rejects.toThrow('Not connected');
+      await expect(t.disconnect()).resolves.toBeUndefined();
+    });
+
+    it('should handle SSE connection errors', async () => {
+      class FakeEventSource {
+        addEventListener() { }
+        removeEventListener() { }
+        close() { }
+        constructor() {
+          throw new Error('SSE connection failed');
+        }
+      }
+      // @ts-ignore
+      global.EventSource = FakeEventSource;
+      const t = new Transport({ protocol: 'sse', host: 'localhost' });
+      await expect(t.connect()).rejects.toThrow('SSE connection failed');
+      // Clean up
+      // @ts-ignore
+      delete global.EventSource;
+    });
+  });
+
+  describe('Agent Unknown Response Handling', () => {
+    const agentConfig = {
+      name: 'TestAgent',
+      description: 'A test agent',
+      capabilities: defaultCapabilities,
+      endpoint: 'ws://localhost',
+      version: '1.0.0'
+    };
+
+    it('should throw error if Agent receives unknown response on startTask', async () => {
+      const transport = {
+        connect: vi.fn().mockResolvedValue(undefined),
+        disconnect: vi.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockResolvedValue(undefined),
+        receive: vi.fn().mockResolvedValue({ foo: 'bar' }), // neither result nor error
+        config: { protocol: 'ws', host: 'localhost' }
+      } as unknown as Transport;
+      const agent = new Agent(agentConfig, transport);
+      await expect(agent.startTask({ content: { type: 'text', content: 'foo' } }))
+        .rejects.toThrow('Failed to start task: Unknown error');
+    });
+
+    it('should throw error if Agent receives unknown response on getTaskStatus', async () => {
+      const transport = {
+        connect: vi.fn().mockResolvedValue(undefined),
+        disconnect: vi.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockResolvedValue(undefined),
+        receive: vi.fn().mockResolvedValue({ foo: 'bar' }),
+        config: { protocol: 'ws', host: 'localhost' }
+      } as unknown as Transport;
+      const agent = new Agent(agentConfig, transport);
+      await expect(agent.getTaskStatus('1'))
+        .rejects.toThrow('Failed to get task status: Unknown error');
+    });
+
+    it('should throw error if Agent receives unknown response on listTasks', async () => {
+      const transport = {
+        connect: vi.fn().mockResolvedValue(undefined),
+        disconnect: vi.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockResolvedValue(undefined),
+        receive: vi.fn().mockResolvedValue({ foo: 'bar' }),
+        config: { protocol: 'ws', host: 'localhost' }
+      } as unknown as Transport;
+      const agent = new Agent(agentConfig, transport);
+      await expect(agent.listTasks())
+        .rejects.toThrow('Failed to list tasks: Unknown error');
+    });
   });
 }); 

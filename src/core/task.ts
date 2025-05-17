@@ -1,4 +1,4 @@
-import { Task as TaskType, TaskStatus, TaskState } from '../types/task';
+import { Task as TaskType, TaskStatus, TaskState, TaskPushNotificationConfig } from '../types/task';
 
 export class Task implements TaskType {
   readonly id: string;
@@ -6,11 +6,17 @@ export class Task implements TaskType {
   metadata?: Record<string, unknown>;
   readonly createdAt: Date;
   updatedAt: Date;
+  pushNotification?: TaskPushNotificationConfig;
 
-  constructor({ id, metadata }: { id?: string; metadata?: Record<string, unknown> }) {
+  constructor({ id, metadata, pushNotification }: { 
+    id?: string; 
+    metadata?: Record<string, unknown>;
+    pushNotification?: TaskPushNotificationConfig;
+  }) {
     this.id = id || Math.random().toString(36).slice(2);
     this.status = { state: 'pending' as TaskState };
     this.metadata = metadata;
+    this.pushNotification = pushNotification;
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }
@@ -25,11 +31,21 @@ export class Task implements TaskType {
     this.updatedAt = new Date();
   }
 
+  setPushNotification(config: TaskPushNotificationConfig) {
+    this.pushNotification = config;
+    this.updatedAt = new Date();
+  }
+
+  getPushNotification(): TaskPushNotificationConfig | undefined {
+    return this.pushNotification;
+  }
+
   toJSON() {
     return {
       id: this.id,
       status: this.status,
       metadata: this.metadata,
+      pushNotification: this.pushNotification,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };

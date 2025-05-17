@@ -33,4 +33,29 @@ export interface Task {
 
 // Forward declarations for types defined in other files
 export interface Artifact { /* see artifact.ts */ }
-export interface Message { /* see message.ts */ } 
+export interface Message { /* see message.ts */ }
+
+/**
+ * Authentication configuration for push notifications
+ */
+export interface PushNotificationAuth {
+  schemes: string[];
+  credentials?: string | null;
+}
+
+/**
+ * Push notification configuration for a task
+ */
+export interface TaskPushNotificationConfig {
+  url: string;
+  token: string;
+  authentication?: PushNotificationAuth | null;
+}
+
+/**
+ * TaskIdParams for operations that require just a task ID
+ */
+export interface TaskIdParams {
+  id: string;
+  metadata?: Record<string, any> | null;
+} 

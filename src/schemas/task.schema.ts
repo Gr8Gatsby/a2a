@@ -38,4 +38,20 @@ export const TaskSchema = z.object({
   artifacts: z.array(z.lazy(() => ArtifactSchema)).nullable().optional(),
   history: z.array(z.lazy(() => MessageSchema)).nullable().optional(),
   metadata: z.record(z.any()).nullable().optional(),
+});
+
+export const PushNotificationAuthSchema = z.object({
+  schemes: z.array(z.string()),
+  credentials: z.string().nullable().optional(),
+});
+
+export const TaskPushNotificationConfigSchema = z.object({
+  url: z.string().url(),
+  token: z.string(),
+  authentication: PushNotificationAuthSchema.nullable().optional(),
+});
+
+export const TaskIdParamsSchema = z.object({
+  id: z.string(),
+  metadata: z.record(z.any()).nullable().optional(),
 }); 

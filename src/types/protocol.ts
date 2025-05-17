@@ -11,7 +11,10 @@ export type ProtocolMethod =
   | 'endTask'
   | 'updateTask'
   | 'getTaskStatus'
-  | 'listTasks';
+  | 'listTasks'
+  | 'tasks/pushNotification/set'
+  | 'tasks/pushNotification/get'
+  | 'tasks/cancel';
 
 /**
  * Base interface for protocol messages
