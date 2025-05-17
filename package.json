@@ -5,11 +5,13 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+   "build": "tsc && tsc-alias",
     "test": "vitest",
-    "test:watch": "vitest watch",
-    "lint": "eslint src --ext .ts",
-    "format": "prettier --write \"src/**/*.ts\""
+    "test:coverage": "vitest run --coverage",
+    "bump-version": "node scripts/bump-version.js",
+    "prepare-npm": "npm run build && node scripts/prepare-npm.js",
+    "publish-npm": "npm run prepare-npm && cd tatou && npm publish",
+    "link-local": "npm run prepare-npm && cd tatou && npm link && cd .. && echo '\n✅ Package linked! You can now run \"npm link tatou\" in your test project\n'"
   },
   "dependencies": {
     "zod": "^3.22.4"
@@ -20,7 +22,16 @@
     "@typescript-eslint/parser": "^7.1.0",
     "eslint": "^8.57.0",
     "prettier": "^3.2.5",
+    "rimraf": "^5.0.5",
     "typescript": "^5.3.3",
     "vitest": "^1.3.1"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
