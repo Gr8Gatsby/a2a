@@ -1,141 +1,73 @@
-# Tatou - A2A TypeScript Implementation
+# tatou
 
-A TypeScript implementation of the Agent-to-Agent (A2A) protocol, enabling seamless communication and interoperability between AI agents. This implementation is based on [Google's A2A Protocol](https://github.com/google/A2A).
+> **Note:** This package is ESM-only. Use `import`/`export` and Node.js 16+.
 
 ## Overview
 
-This package provides a robust TypeScript implementation of the A2A protocol, offering:
-
-- Strongly typed interfaces for all A2A protocol components
-- Comprehensive test suite using Vitest
-- Full support for JSON-RPC 2.0 over HTTP(S)
-- Type-safe agent discovery and communication
-- Support for synchronous and asynchronous interactions
-- Enterprise-ready security features
-
-## Installation
-
-```bash
-npm install tatou
-```
+A robust TypeScript implementation of the Agent-to-Agent (A2A) protocol, with runtime validation, high test coverage, and modern developer experience.
 
 ## Quick Start
 
 ```typescript
 import { Agent, Transport } from 'tatou';
 
-// Create a transport layer
-const transport = new Transport({
-  protocol: 'ws',
-  host: 'my-agent.example.com',
-  port: 8080
-});
-
-// Create a new agent
+const transport = new Transport({ protocol: 'ws', host: 'localhost' });
 const agent = new Agent({
-  name: 'MyAgent',
-  description: 'A sample A2A agent',
-  capabilities: ['text', 'json'],
-  endpoint: 'https://my-agent.example.com'
-}, transport);
-
-// Start a new task
-const task = await agent.startTask({
-  content: {
-    type: 'text',
-    content: 'Hello, other agent!'
-  }
-});
-```
-
-### Working with Types
-
-If you need to work with the type definitions directly:
-
-```typescript
-// Import types namespace
-import { Types } from 'tatou';
-
-// Or import specific types
-import type { Agent, Task } from 'tatou/types';
-
-// Use types for type annotations
-const config: Types.AgentConfig = {
   name: 'MyAgent',
   description: 'A sample agent',
   capabilities: ['text'],
-  endpoint: 'https://example.com'
-};
+  endpoint: 'ws://localhost'
+}, transport);
+
+// Start a task
+const task = await agent.startTask({ content: { type: 'text', content: 'Hello!' } });
 ```
 
-## Features
+## Type Safety & Runtime Validation
 
-- 🔒 Type-safe protocol implementation
-- 🧪 Comprehensive test suite with Vitest
-- 📦 NPM package for easy integration
-- 🔄 Support for all A2A protocol features
-- 📚 Detailed TypeScript documentation
-- 🔍 Built-in type definitions
+- All protocol types are defined in TypeScript (`src/types/`).
+- All external data is validated at runtime using [zod](https://zod.dev/) schemas (`src/schemas/`).
 
-## Development
+## Testing
 
-### Prerequisites
+- **Type tests:** Compile-time only, ensure type safety.
+- **Runtime tests:** Validate schemas with zod.
+- **Core tests:** Test all implementation logic.
+- Run all tests: `npm test`
+- Run coverage: `npm run test:coverage`
 
-- Node.js 18+
-- npm 8+
+## Coverage
 
-### Setup
+- 90%+ coverage enforced.
+- Defensive code is documented and excluded from coverage.
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/a2a-typescript.git
-cd a2a-typescript
+## Local Development
 
-# Install dependencies
-npm install
+- Build and link locally: `npm run link-local`
+- In your test project: `npm link tatou`
 
-# Run tests
-npm test
-```
-
-### Project Structure
+## Directory Structure
 
 ```
 src/
-  ├── types/         # TypeScript type definitions
-  ├── core/          # Core protocol implementation
-  ├── transport/     # Transport layer (HTTP, WebSocket)
-  ├── security/      # Security and authentication
-  └── utils/         # Utility functions
+  core/      # Implementation
+  schemas/   # zod schemas for runtime validation
+  types/     # TypeScript types/interfaces
 tests/
-  ├── unit/         # Unit tests
-  ├── integration/  # Integration tests
-  └── e2e/          # End-to-end tests
+  unit/      # All test suites (type, runtime, core)
 ```
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+- Fork, branch, and submit PRs.
+- Run all tests before submitting.
+- See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+Apache-2.0
 
-## Documentation
+## Links
 
-For detailed documentation, please visit our [documentation site](https://your-docs-site.com).
-
-## Roadmap
-
-- [ ] Complete TypeScript type definitions
-- [ ] Implement core protocol features
-- [ ] Add comprehensive test suite
-- [ ] Create documentation site
-- [ ] Publish to npm
-- [ ] Add example implementations
-- [ ] Support for WebSocket transport
-- [ ] Security enhancements
-
-## Support
-
-For support, please open an issue in the GitHub repository or contact us at [support@example.com](mailto:support@example.com).
+- [A2A Protocol Spec](https://github.com/google/A2A)
+- [zod Documentation](https://zod.dev/)

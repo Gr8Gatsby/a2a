@@ -232,4 +232,121 @@ describe('Core Implementation', () => {
     await expect(t.send({} as any)).rejects.toThrow('Not connected');
     await expect(t.receive()).rejects.toThrow('Not connected');
   });
+
+  // Additional tests for protocol.ts branch/edge coverage
+  it('should return false for validateRequest with missing/invalid fields', () => {
+    expect(Protocol.validateRequest(null)).toBe(false);
+    expect(Protocol.validateRequest(undefined)).toBe(false);
+    expect(Protocol.validateRequest({ jsonrpc: '2.0', id: 1, method: 123, params: {} })).toBe(false); // method not string
+    expect(Protocol.validateRequest({ jsonrpc: '2.0', id: 1, method: 'startTask' })).toBe(false); // missing params
+    expect(Protocol.validateRequest({ jsonrpc: '1.0', id: 1, method: 'startTask', params: {} })).toBe(false); // wrong jsonrpc
+    expect(Protocol.validateRequest({ jsonrpc: '2.0', id: {}, method: 'startTask', params: {} })).toBe(false); // id not string/number
+  });
+
+  it('should return false for validateResponse with missing/invalid fields', () => {
+    expect(Protocol.validateResponse(null)).toBe(false);
+    expect(Protocol.validateResponse(undefined)).toBe(false);
+    expect(Protocol.validateResponse({ jsonrpc: '2.0', id: 1 })).toBe(false); // missing result and error
+    expect(Protocol.validateResponse({ jsonrpc: '2.0', id: {}, result: {} })).toBe(false); // id not string/number
+    expect(Protocol.validateResponse({ jsonrpc: '1.0', id: 1, result: {} })).toBe(false); // wrong jsonrpc
+  });
+
+  // Additional tests for transport.ts branch/edge coverage
+  it('should not reconnect if already connected in Transport', async () => {
+    const t = new Transport({ protocol: 'ws', host: 'localhost' });
+    // @ts-ignore: simulate already connected
+    t.connection = {} as any;
+    await expect(t.connect()).resolves.toBeUndefined();
+  });
+
+  it('should handle connection error in Transport.connect', async () => {
+    // Mock WebSocket
+    class FakeWebSocket {
+      onopen: (() => void) | null = null;
+      onerror: ((err: any) => void) | null = null;
+      constructor() {
+        setTimeout(() => {
+          if (this.onerror) this.onerror(new Error('fail connect'));
+        }, 0);
+      }
+    }
+    // @ts-ignore: override global
+    global.WebSocket = FakeWebSocket;
+    const t = new Transport({ protocol: 'ws', host: 'localhost' });
+    await expect(t.connect()).rejects.toThrow();
+    // Clean up
+    // @ts-ignore
+    delete global.WebSocket;
+  });
+
+  it('should handle onmessage and onerror in Transport.receive', async () => {
+    // Mock WebSocket
+    let onmessage: ((event: any) => void) | null = null;
+    let onerror: ((err: any) => void) | null = null;
+    class FakeWebSocket {
+      onopen: (() => void) | null = null;
+      onerror: ((err: any) => void) | null = null;
+      onmessage: ((event: any) => void) | null = null;
+      close = vi.fn();
+      send = vi.fn();
+      constructor() {
+        onmessage = null;
+        onerror = null;
+        setTimeout(() => {
+          if (this.onopen) this.onopen();
+        }, 0);
+      }
+    }
+    // @ts-ignore: override global
+    global.WebSocket = FakeWebSocket;
+    const t = new Transport({ protocol: 'ws', host: 'localhost' });
+    // @ts-ignore: simulate connected
+    t.connection = new FakeWebSocket();
+    // Simulate onmessage
+    const receivePromise = t.receive();
+    // @ts-ignore
+    t.connection.onmessage({ data: JSON.stringify({ foo: 'bar' }) });
+    await expect(receivePromise).resolves.toEqual({ foo: 'bar' });
+    // Simulate onerror
+    const receivePromise2 = t.receive();
+    // @ts-ignore
+    t.connection.onerror(new Error('fail receive'));
+    await expect(receivePromise2).rejects.toThrow();
+    // Clean up
+    // @ts-ignore
+    delete global.WebSocket;
+  });
+
+  it('should handle WebSocket onopen and onerror in connect', async () => {
+    let onopen: (() => void) | null = null;
+    let onerror: ((err: any) => void) | null = null;
+    class FakeWebSocket {
+      constructor() {
+        setTimeout(() => {
+          if (onopen) onopen();
+        }, 0);
+      }
+      set onopen(fn) { onopen = fn; }
+      get onopen() { return onopen; }
+      set onerror(fn) { onerror = fn; }
+      get onerror() { return onerror; }
+    }
+    // @ts-ignore
+    global.WebSocket = FakeWebSocket;
+    const t = new Transport({ protocol: 'ws', host: 'localhost' });
+    await expect(t.connect()).resolves.toBeUndefined();
+    // Simulate error after connection
+    const t2 = new Transport({ protocol: 'ws', host: 'localhost' });
+    setTimeout(() => {
+      if (onerror) onerror(new Error('fail after connect'));
+    }, 0);
+    await expect(t2.connect()).rejects.toThrow();
+    // @ts-ignore
+    delete global.WebSocket;
+  });
+
+  it('should not throw if disconnect is called when already disconnected', async () => {
+    const t = new Transport({ protocol: 'ws', host: 'localhost' });
+    await expect(t.disconnect()).resolves.toBeUndefined();
+  });
 }); 

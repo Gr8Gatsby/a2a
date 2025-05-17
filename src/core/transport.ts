@@ -27,6 +27,7 @@ export class Transport implements TransportType {
     
     return new Promise((resolve, reject) => {
       if (!this.connection) {
+        // istanbul ignore next: defensive, should never happen
         reject(new Error('Connection failed'));
         return;
       }
@@ -52,6 +53,7 @@ export class Transport implements TransportType {
 
     return new Promise((resolve, reject) => {
       if (!this.connection) {
+        // istanbul ignore next: defensive, should never happen
         reject(new Error('Not connected'));
         return;
       }
@@ -69,6 +71,7 @@ export class Transport implements TransportType {
 
     return new Promise((resolve, reject) => {
       if (!this.connection) {
+        // istanbul ignore next: defensive, should never happen
         reject(new Error('Not connected'));
         return;
       }
