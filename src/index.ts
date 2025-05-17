@@ -5,4 +5,8 @@ export { Transport } from './core/transport';
 export { Protocol } from './core/protocol';
 
 // Re-export types under a /types subpath
-export * as Types from './types'; 
+export * as Types from './types';
+
+// Top-level exports for protocol and task types
+export * from './types/protocol';
+export * from './types/task'; 
