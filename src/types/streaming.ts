@@ -1,5 +1,4 @@
 import { SendTaskStreamingResponse } from './protocol';
-import { TaskStatusUpdateEvent, TaskArtifactUpdateEvent } from './task';
 
 /**
  * SSE event types for A2A streaming
