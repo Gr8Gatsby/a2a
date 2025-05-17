@@ -1,7 +1,8 @@
 import { ProtocolRequest, ProtocolResponse, ProtocolMethod } from '../types/protocol';
 import { SSEConnection, SSEOptions, SSEEventHandler } from '../types/streaming';
 import { A2AErrorCode, createA2AError } from '../types/errors';
-import { validateRequest, validateResponse } from '../validation/schemas';
+import { validateResponse } from '../validation/schemas';
+import { TransportSecurity, AuthenticationManager, InputSanitizer } from '../security/transport';
 
 /**
  * HTTP transport configuration
@@ -11,6 +12,21 @@ export interface HTTPTransportConfig {
   headers?: Record<string, string>;
   timeout?: number;
   withCredentials?: boolean;
+  security?: {
+    requireHttps: boolean;
+    allowedOrigins?: string[];
+    allowedMethods?: string[];
+    maxRequestSize?: number;
+    rateLimit?: {
+      windowMs: number;
+      maxRequests: number;
+    };
+  };
+  authentication?: {
+    schemes: string[];
+    validateToken: (token: string) => Promise<boolean>;
+    validateCredentials?: (credentials: string) => Promise<boolean>;
+  };
 }
 
 /**
@@ -19,6 +35,8 @@ export interface HTTPTransportConfig {
 export class HTTPTransport {
   private config: HTTPTransportConfig;
   private defaultHeaders: Record<string, string>;
+  private transportSecurity: TransportSecurity;
+  private authManager: AuthenticationManager | null = null;
 
   constructor(config: HTTPTransportConfig) {
     this.config = config;
@@ -27,6 +45,18 @@ export class HTTPTransport {
       'Accept': 'application/json',
       ...config.headers
     };
+
+    // Initialize transport security if configured
+    if (config.security) {
+      this.transportSecurity = new TransportSecurity(config.security);
+    } else {
+      this.transportSecurity = new TransportSecurity({ requireHttps: false });
+    }
+
+    // Initialize authentication manager if configured
+    if (config.authentication) {
+      this.authManager = new AuthenticationManager(config.authentication);
+    }
   }
 
   /**
@@ -37,10 +67,24 @@ export class HTTPTransport {
     const url = this.getMethodUrl(method);
 
     try {
+      // Validate transport security
+      this.transportSecurity.validateTransport(url, 'POST');
+      this.transportSecurity.validateRequestSize(JSON.stringify(request).length);
+      this.transportSecurity.checkRateLimit(request.id.toString());
+
+      // Validate authentication if configured
+      if (this.authManager && this.config.headers?.authorization) {
+        const [scheme, token] = this.config.headers.authorization.split(' ');
+        await this.authManager.validateAuthentication({ scheme, token });
+      }
+
+      // Sanitize request
+      const sanitizedRequest = InputSanitizer.sanitizeObject(request);
+
       const response = await fetch(url, {
         method: 'POST',
         headers: this.defaultHeaders,
-        body: JSON.stringify(request),
+        body: JSON.stringify(sanitizedRequest),
         credentials: this.config.withCredentials ? 'include' : 'same-origin',
         signal: this.config.timeout ? AbortSignal.timeout(this.config.timeout) : undefined
       });
@@ -69,7 +113,7 @@ export class HTTPTransport {
    */
   createSSEConnection(method: ProtocolMethod, params: unknown, options?: SSEOptions): SSEConnection {
     const url = this.getMethodUrl(method);
-    const headers = {
+    const headers: Record<string, string> = {
       ...this.defaultHeaders,
       'Accept': 'text/event-stream',
       ...options?.headers
@@ -82,12 +126,26 @@ export class HTTPTransport {
       params
     };
 
-    validateRequest(request);
+    // Validate transport security
+    this.transportSecurity.validateTransport(url, 'POST');
+    this.transportSecurity.validateRequestSize(JSON.stringify(request).length);
+    this.transportSecurity.checkRateLimit(request.id.toString());
+
+    // Validate authentication if configured
+    if (this.authManager && headers.authorization) {
+      const [scheme, token] = headers.authorization.split(' ');
+      this.authManager.validateAuthentication({ scheme, token }).catch(error => {
+        throw createA2AError(A2AErrorCode.AuthenticationRequired, { cause: error.message });
+      });
+    }
+
+    // Sanitize request
+    const sanitizedRequest = InputSanitizer.sanitizeObject(request);
 
     return new EventSourceConnection(url, {
       method: 'POST',
       headers,
-      body: JSON.stringify(request),
+      body: JSON.stringify(sanitizedRequest),
       withCredentials: options?.withCredentials ?? this.config.withCredentials,
       timeout: options?.timeout ?? this.config.timeout
     });

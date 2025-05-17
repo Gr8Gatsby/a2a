@@ -33,6 +33,7 @@ export default defineConfig({
         },
       } as any,
     },
+    include: ['src/**/*.test.ts'],
   },
   resolve: {
     alias: {
