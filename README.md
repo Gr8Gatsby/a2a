@@ -14,7 +14,11 @@ import { Agent, Transport, ProtocolMessage, Task, TaskStatus, AgentConfig } from
 const config: AgentConfig = {
   name: 'MyAgent',
   description: 'A sample agent',
-  capabilities: ['text'],
+  capabilities: {
+    streaming: true,
+    pushNotifications: false,
+    stateTransitionHistory: true
+  },
   endpoint: 'ws://localhost',
   version: '1.0.0',
   metadata: {
@@ -65,7 +69,11 @@ import { AgentConfig, Agent } from 'tatou';
 const config: AgentConfig = {
   name: 'MyAgent',
   description: 'A sample agent',
-  capabilities: ['text'],
+  capabilities: {
+    streaming: true,
+    pushNotifications: false,
+    stateTransitionHistory: true
+  },
   endpoint: 'ws://localhost',
   version: '1.0.0',
   metadata: {
@@ -79,7 +87,7 @@ const config: AgentConfig = {
 interface Agent {
   readonly name: string;
   readonly description: string;
-  readonly capabilities: string[];
+  readonly capabilities: AgentCapabilities;
   readonly endpoint: string;
   readonly version: string;
   readonly metadata?: Record<string, unknown>;
@@ -93,60 +101,61 @@ interface Agent {
 }
 ```
 
-## Type Safety & Runtime Validation
+## Agent Skills
 
-- All protocol types are defined in TypeScript (`src/types/`).
-- All external data is validated at runtime using [zod](https://zod.dev/) schemas (`src/schemas/`).
-- **Type imports:** You can now import protocol and task types directly:
-  ```typescript
-  import { ProtocolMessage, Task, TaskStatus, AgentConfig } from 'tatou';
-  ```
-  Or, for all types:
-  ```typescript
-  import { Types } from 'tatou';
-  // Types.ProtocolMessage, Types.Task, etc.
-  ```
+The `skills` property of `AgentConfig` allows you to describe the specific capabilities or functions your agent can perform, following the A2A spec:
 
-## Testing
+```typescript
+import { AgentSkill } from 'tatou';
 
-- **Type tests:** Compile-time only, ensure type safety.
-- **Runtime tests:** Validate schemas with zod.
-- **Core tests:** Test all implementation logic.
-- Run all tests: `npm test`
-- Run coverage: `npm run test:coverage`
+const skills: AgentSkill[] = [
+  {
+    id: 'summarize-text',
+    name: 'Text Summarizer',
+    description: 'Summarizes input text.',
+    tags: ['nlp', 'summarization'],
+    examples: ['Summarize this article', 'TL;DR for the following text'],
+    inputModes: ['text/plain'],
+    outputModes: ['text/plain']
+  },
+  {
+    id: 'currency-converter',
+    name: 'Currency Converter',
+    tags: ['finance', 'conversion'],
+    examples: ['convert 100 USD to EUR'],
+    inputModes: ['application/json'],
+    outputModes: ['application/json']
+  }
+];
 
-## Coverage
-
-- 90%+ coverage enforced.
-- Defensive code is documented and excluded from coverage.
-
-## Local Development
-
-- Build and link locally: `npm run link-local`
-- In your test project: `npm link tatou`
-
-## Directory Structure
-
-```
-src/
-  core/      # Implementation
-  schemas/   # zod schemas for runtime validation
-  types/     # TypeScript types/interfaces
-tests/
-  unit/      # All test suites (type, runtime, core)
+const config: AgentConfig = {
+  name: 'MyAgent',
+  description: 'A sample agent',
+  capabilities: { streaming: true },
+  endpoint: 'ws://localhost',
+  version: '1.0.0',
+  skills,
+};
 ```
 
-## Contributing
+## Agent Authentication
 
-- Fork, branch, and submit PRs.
-- Run all tests before submitting.
-- See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+The `authentication` property of `AgentConfig` describes the authentication requirements for accessing the agent's endpoint, following the A2A spec:
 
-## License
+```typescript
+import { AgentAuthentication } from 'tatou';
 
-Apache-2.0
+const authentication: AgentAuthentication = {
+  schemes: ['OAuth2', 'ApiKey'],
+  credentials: '{"authorizationUrl": "https://auth.example.com", "tokenUrl": "https://token.example.com"}'
+};
 
-## Links
-
-- [A2A Protocol Spec](https://github.com/google/A2A)
-- [zod Documentation](https://zod.dev/)
+const config: AgentConfig = {
+  name: 'MyAgent',
+  description: 'A sample agent',
+  capabilities: { streaming: true },
+  endpoint: 'ws://localhost',
+  version: '1.0.0',
+  authentication,
+};
+```

@@ -5,59 +5,65 @@ import { Transport } from '../../src/core/transport';
 import { Protocol } from '../../src/core/protocol';
 
 describe('Core Implementation', () => {
+  const now = new Date();
+  const defaultCapabilities = {
+    streaming: true,
+    pushNotifications: false,
+    stateTransitionHistory: true
+  };
+
   it('should create an Agent instance with valid config and transport', () => {
     // Mock transport
     const transport = {
       connect: vi.fn().mockResolvedValue(undefined),
       disconnect: vi.fn().mockResolvedValue(undefined),
       send: vi.fn().mockResolvedValue(undefined),
-      receive: vi.fn().mockResolvedValue({ result: { id: '1', status: 'pending', content: { type: 'text', content: 'foo' }, createdAt: new Date(), updatedAt: new Date() } }),
+      receive: vi.fn().mockResolvedValue({ result: { id: '1', status: { state: 'pending' }, content: { type: 'text', content: 'foo' }, createdAt: new Date(), updatedAt: new Date() } }),
       config: { protocol: 'ws', host: 'localhost' }
     } as unknown as Transport;
 
     const agent = new Agent({
       name: 'TestAgent',
       description: 'A test agent',
-      capabilities: ['text'],
-      endpoint: 'ws://localhost'
+      capabilities: defaultCapabilities,
+      endpoint: 'ws://localhost',
+      version: '1.0.0'
     }, transport);
 
     expect(agent.name).toBe('TestAgent');
-    expect(agent.capabilities).toContain('text');
+    expect(agent.capabilities.streaming).toBe(true);
+    expect(agent.capabilities.pushNotifications).toBe(false);
+    expect(agent.version).toBe('1.0.0');
   });
 
   it('should create a Task and update its status', () => {
-    const task = new Task({
-      content: { type: 'text', content: 'foo' }
-    });
-    expect(task.status).toBe('pending');
+    const task = new Task({});
+    expect(task.status.state).toBe('pending');
     task.updateStatus('completed');
-    expect(task.status).toBe('completed');
-    task.updateContent({ type: 'text', content: 'bar' });
-    expect(task.content.content).toBe('bar');
+    expect(task.status.state).toBe('completed');
     task.updateMetadata({ priority: 'high' });
     expect(task.metadata?.priority).toBe('high');
     expect(typeof task.toJSON()).toBe('object');
   });
 
   it('should start a task via Agent and return a Task', async () => {
-    const now = new Date();
     const transport = {
       connect: vi.fn().mockResolvedValue(undefined),
       disconnect: vi.fn().mockResolvedValue(undefined),
       send: vi.fn().mockResolvedValue(undefined),
-      receive: vi.fn().mockResolvedValue({ result: { id: '1', status: 'pending', content: { type: 'text', content: 'foo' }, createdAt: now, updatedAt: now } }),
+      receive: vi.fn().mockResolvedValue({ result: { id: '1', status: { state: 'pending' }, content: { type: 'text', content: 'foo' }, createdAt: now, updatedAt: now } }),
       config: { protocol: 'ws', host: 'localhost' }
     } as unknown as Transport;
     const agent = new Agent({
       name: 'TestAgent',
       description: 'A test agent',
-      capabilities: ['text'],
-      endpoint: 'ws://localhost'
+      capabilities: defaultCapabilities,
+      endpoint: 'ws://localhost',
+      version: '1.0.0'
     }, transport);
     const task = await agent.startTask({ content: { type: 'text', content: 'foo' } });
     expect(task.id).toBe('1');
-    expect(task.status).toBe('pending');
+    expect(task.status.state).toBe('pending');
   });
 
   it('should end a task via Agent', async () => {
@@ -65,54 +71,55 @@ describe('Core Implementation', () => {
       connect: vi.fn().mockResolvedValue(undefined),
       disconnect: vi.fn().mockResolvedValue(undefined),
       send: vi.fn().mockResolvedValue(undefined),
-      receive: vi.fn().mockResolvedValue({ result: undefined }),
+      receive: vi.fn().mockResolvedValue({ result: { id: '1', status: { state: 'completed' }, content: { type: 'text', content: 'foo' }, createdAt: now, updatedAt: now } }),
       config: { protocol: 'ws', host: 'localhost' }
     } as unknown as Transport;
     const agent = new Agent({
       name: 'TestAgent',
       description: 'A test agent',
-      capabilities: ['text'],
-      endpoint: 'ws://localhost'
+      capabilities: defaultCapabilities,
+      endpoint: 'ws://localhost',
+      version: '1.0.0'
     }, transport);
     await expect(agent.endTask('1')).resolves.toBeUndefined();
   });
 
   it('should get task status via Agent', async () => {
-    const now = new Date();
     const transport = {
       connect: vi.fn().mockResolvedValue(undefined),
       disconnect: vi.fn().mockResolvedValue(undefined),
       send: vi.fn().mockResolvedValue(undefined),
-      receive: vi.fn().mockResolvedValue({ result: { id: '1', status: 'completed', content: { type: 'text', content: 'foo' }, createdAt: now, updatedAt: now } }),
+      receive: vi.fn().mockResolvedValue({ result: { id: '1', status: { state: 'completed' }, content: { type: 'text', content: 'foo' }, createdAt: now, updatedAt: now } }),
       config: { protocol: 'ws', host: 'localhost' }
     } as unknown as Transport;
     const agent = new Agent({
       name: 'TestAgent',
       description: 'A test agent',
-      capabilities: ['text'],
-      endpoint: 'ws://localhost'
+      capabilities: defaultCapabilities,
+      endpoint: 'ws://localhost',
+      version: '1.0.0'
     }, transport);
     const task = await agent.getTaskStatus('1');
-    expect(task.status).toBe('completed');
+    expect(task.status.state).toBe('completed');
   });
 
   it('should list tasks via Agent', async () => {
-    const now = new Date();
     const transport = {
       connect: vi.fn().mockResolvedValue(undefined),
       disconnect: vi.fn().mockResolvedValue(undefined),
       send: vi.fn().mockResolvedValue(undefined),
       receive: vi.fn().mockResolvedValue({ result: [
-        { id: '1', status: 'pending', content: { type: 'text', content: 'foo' }, createdAt: now, updatedAt: now },
-        { id: '2', status: 'completed', content: { type: 'text', content: 'bar' }, createdAt: now, updatedAt: now }
+        { id: '1', status: { state: 'pending' }, content: { type: 'text', content: 'foo' }, createdAt: now, updatedAt: now },
+        { id: '2', status: { state: 'completed' }, content: { type: 'text', content: 'bar' }, createdAt: now, updatedAt: now }
       ] }),
       config: { protocol: 'ws', host: 'localhost' }
     } as unknown as Transport;
     const agent = new Agent({
       name: 'TestAgent',
       description: 'A test agent',
-      capabilities: ['text'],
-      endpoint: 'ws://localhost'
+      capabilities: defaultCapabilities,
+      endpoint: 'ws://localhost',
+      version: '1.0.0'
     }, transport);
     const tasks = await agent.listTasks();
     expect(tasks).toHaveLength(2);
@@ -131,8 +138,9 @@ describe('Core Implementation', () => {
     const agent = new Agent({
       name: 'TestAgent',
       description: 'A test agent',
-      capabilities: ['text'],
-      endpoint: 'ws://localhost'
+      capabilities: defaultCapabilities,
+      endpoint: 'ws://localhost',
+      version: '1.0.0'
     }, transport);
     await expect(agent.startTask({ content: { type: 'text', content: 'foo' } })).rejects.toThrow('Failed to start task: fail');
   });
@@ -148,8 +156,9 @@ describe('Core Implementation', () => {
     const agent = new Agent({
       name: 'TestAgent',
       description: 'A test agent',
-      capabilities: ['text'],
-      endpoint: 'ws://localhost'
+      capabilities: defaultCapabilities,
+      endpoint: 'ws://localhost',
+      version: '1.0.0'
     }, transport);
     await expect(agent.endTask('1')).rejects.toThrow('Failed to end task: fail end');
   });
@@ -165,8 +174,9 @@ describe('Core Implementation', () => {
     const agent = new Agent({
       name: 'TestAgent',
       description: 'A test agent',
-      capabilities: ['text'],
-      endpoint: 'ws://localhost'
+      capabilities: defaultCapabilities,
+      endpoint: 'ws://localhost',
+      version: '1.0.0'
     }, transport);
     await expect(agent.getTaskStatus('1')).rejects.toThrow('Failed to get task status: fail status');
   });
@@ -182,8 +192,9 @@ describe('Core Implementation', () => {
     const agent = new Agent({
       name: 'TestAgent',
       description: 'A test agent',
-      capabilities: ['text'],
-      endpoint: 'ws://localhost'
+      capabilities: defaultCapabilities,
+      endpoint: 'ws://localhost',
+      version: '1.0.0'
     }, transport);
     await expect(agent.listTasks()).rejects.toThrow('Failed to list tasks: fail list');
   });
@@ -431,5 +442,29 @@ describe('Core Implementation', () => {
       const t = new Transport({ protocol: 'sse', host: 'localhost' });
       await expect(t.connect()).rejects.toThrow('EventSource is not available in this environment');
     });
+  });
+
+  it('should implement event emitter methods', () => {
+    const transport = {
+      connect: vi.fn().mockResolvedValue(undefined),
+      disconnect: vi.fn().mockResolvedValue(undefined),
+      send: vi.fn().mockResolvedValue(undefined),
+      receive: vi.fn().mockResolvedValue({ result: { id: '1', status: { state: 'pending' }, content: { type: 'text', content: 'foo' }, createdAt: new Date(), updatedAt: new Date() } }),
+      config: { protocol: 'ws', host: 'localhost' }
+    } as unknown as Transport;
+
+    const agent = new Agent({
+      name: 'TestAgent',
+      description: 'A test agent',
+      capabilities: defaultCapabilities,
+      endpoint: 'ws://localhost',
+      version: '1.0.0'
+    }, transport);
+
+    // Test event emitter methods
+    const listener = vi.fn();
+    agent.on('testEvent', listener);
+    agent.emit('testEvent', 'testData');
+    expect(listener).toHaveBeenCalledWith('testData');
   });
 }); 

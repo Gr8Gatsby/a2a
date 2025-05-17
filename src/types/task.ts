@@ -1,37 +1,36 @@
 /**
- * Represents the type of content in a task
+ * TaskState Enum (A2A 6.3)
  */
-export type TaskContentType = 'text' | 'json' | 'binary';
+export type TaskState =
+  | 'submitted'
+  | 'working'
+  | 'input-required'
+  | 'completed'
+  | 'canceled'
+  | 'failed'
+  | 'unknown';
 
 /**
- * Base interface for task content
+ * TaskStatus Object (A2A 6.2)
  */
-export interface TaskContent {
-  type: TaskContentType;
-  content: string | object | ArrayBuffer;
+export interface TaskStatus {
+  state: TaskState;
+  message?: Message | null;
+  timestamp?: string | null; // ISO 8601
 }
 
 /**
- * Configuration for creating a new task
- */
-export interface TaskConfig {
-  content: TaskContent;
-  metadata?: Record<string, unknown>;
-}
-
-/**
- * Represents the status of a task
- */
-export type TaskStatus = 'pending' | 'running' | 'completed' | 'failed';
-
-/**
- * Represents an A2A task
+ * Task Object (A2A 6.1)
  */
 export interface Task {
-  readonly id: string;
-  readonly status: TaskStatus;
-  readonly content: TaskContent;
-  readonly metadata?: Record<string, unknown>;
-  readonly createdAt: Date;
-  readonly updatedAt: Date;
-} 
+  id: string;
+  sessionId?: string | null;
+  status: TaskStatus;
+  artifacts?: Artifact[] | null;
+  history?: Message[] | null;
+  metadata?: Record<string, any> | null;
+}
+
+// Forward declarations for types defined in other files
+export interface Artifact { /* see artifact.ts */ }
+export interface Message { /* see message.ts */ } 

@@ -1,28 +1,32 @@
-import { Agent as AgentType, AgentConfig, Task, TaskConfig } from '../types';
+import { Agent as AgentType, AgentConfig, Task, AgentCapabilities } from '../types';
 import { Transport } from '../types/transport';
 import { ProtocolRequest, ProtocolResponse } from '../types/protocol';
+import { EventEmitter } from 'events';
 
-export class Agent implements AgentType {
+export class Agent extends EventEmitter implements AgentType {
   readonly name: string;
   readonly description: string;
-  readonly capabilities: AgentType['capabilities'];
+  readonly capabilities: AgentCapabilities;
   readonly endpoint: string;
+  readonly version: string;
   private transport: Transport;
 
   constructor(config: AgentConfig, transport: Transport) {
+    super();
     this.name = config.name;
     this.description = config.description;
     this.capabilities = config.capabilities;
     this.endpoint = config.endpoint;
+    this.version = config.version;
     this.transport = transport;
   }
 
-  async startTask(config: TaskConfig): Promise<Task> {
+  async startTask(params: unknown): Promise<Task> {
     const request: ProtocolRequest = {
       jsonrpc: '2.0',
       id: Date.now(),
       method: 'startTask',
-      params: config
+      params
     };
 
     const response = await this.sendRequest(request);

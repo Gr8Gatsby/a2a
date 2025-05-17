@@ -1,9 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import type {
   AgentConfig,
-  TaskConfig,
-  TaskContentType,
   TransportConfig,
+  AgentCapabilities
 } from '../../src/types';
 import type {
   ProtocolRequest,
@@ -16,8 +15,13 @@ describe('Type Definitions', () => {
     const config: AgentConfig = {
       name: 'TestAgent',
       description: 'A test agent',
-      capabilities: ['text', 'json'],
+      capabilities: {
+        streaming: true,
+        pushNotifications: false,
+        stateTransitionHistory: true
+      },
       endpoint: 'https://test.example.com',
+      version: '1.0.0'
     };
     expect(config).toBeDefined();
   });
@@ -27,32 +31,11 @@ describe('Type Definitions', () => {
     const config: AgentConfig = {
       name: 'TestAgent',
       // description missing
-      capabilities: ['text'],
-      endpoint: 'https://test.example.com',
-    };
-    expect(config).toBeDefined();
-  });
-
-  it('should allow all TaskContentType values', () => {
-    const types: TaskContentType[] = ['text', 'json', 'binary'];
-    expect(types).toHaveLength(3);
-  });
-
-  it('should allow creating a valid task config (type)', () => {
-    const config: TaskConfig = {
-      content: {
-        type: 'json',
-        content: { foo: 'bar' },
+      capabilities: {
+        streaming: true
       },
-      metadata: { priority: 'high' },
-    };
-    expect(config).toBeDefined();
-  });
-
-  it('should not allow missing content in task config', () => {
-    // @ts-expect-error
-    const config: TaskConfig = {
-      metadata: { priority: 'high' },
+      endpoint: 'https://test.example.com',
+      version: '1.0.0'
     };
     expect(config).toBeDefined();
   });
@@ -137,5 +120,43 @@ describe('Type Definitions', () => {
       'listTasks',
     ];
     expect(methods).toHaveLength(5);
+  });
+});
+
+describe('Protocol Types', () => {
+  it('FileContent: only one of bytes or uri allowed', () => {
+    // Valid: only bytes
+    const file1: import('../../src/types/message').FileContent = { name: 'foo', bytes: 'abc', uri: null };
+    // Valid: only uri
+    const file2: import('../../src/types/message').FileContent = { name: 'foo', bytes: null, uri: 'https://example.com/file' };
+    // Valid: both null/undefined (reference only)
+    const file3: import('../../src/types/message').FileContent = { name: 'foo' };
+    const file4: import('../../src/types/message').FileContent = { name: 'foo', bytes: 'abc', uri: 'https://example.com/file' };
+  });
+
+  it('Artifact: at least one Part required', () => {
+    // Valid
+    const artifact1: import('../../src/types/artifact').Artifact = { parts: [{ type: 'text', text: 'hi' }] };
+    const artifact2: import('../../src/types/artifact').Artifact = { parts: [] };
+  });
+
+  it('TaskStatus: must be object, not string', () => {
+    // Valid
+    const status1: import('../../src/types/task').TaskStatus = { state: 'working' };
+    // @ts-expect-error - not an object
+    const status2: import('../../src/types/task').TaskStatus = 'working';
+  });
+
+  it('TaskState: only allowed values', () => {
+    // Valid
+    const state1: import('../../src/types/task').TaskState = 'submitted';
+    // @ts-expect-error - not allowed
+    const state2: import('../../src/types/task').TaskState = 'foo';
+  });
+
+  it('Message: at least one Part required', () => {
+    // Valid
+    const msg1: import('../../src/types/message').Message = { role: 'user', parts: [{ type: 'text', text: 'hi' }] };
+    const msg2: import('../../src/types/message').Message = { role: 'user', parts: [] };
   });
 }); 

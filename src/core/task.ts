@@ -1,42 +1,34 @@
-import { Task as TaskType, TaskConfig, TaskContent, TaskStatus } from '../types/task';
+import { Task as TaskType, TaskStatus, TaskState } from '../types/task';
 
 export class Task implements TaskType {
   readonly id: string;
-  readonly status: TaskStatus;
-  readonly content: TaskContent;
-  readonly metadata?: Record<string, unknown>;
+  status: TaskStatus;
+  metadata?: Record<string, unknown>;
   readonly createdAt: Date;
-  readonly updatedAt: Date;
+  updatedAt: Date;
 
-  constructor(config: TaskConfig) {
-    this.id = crypto.randomUUID();
-    this.status = 'pending';
-    this.content = config.content;
-    this.metadata = config.metadata;
+  constructor({ id, metadata }: { id?: string; metadata?: Record<string, unknown> }) {
+    this.id = id || Math.random().toString(36).slice(2);
+    this.status = { state: 'pending' as TaskState };
+    this.metadata = metadata;
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }
 
-  updateStatus(status: TaskStatus): void {
-    (this as any).status = status;
-    (this as any).updatedAt = new Date();
+  updateStatus(state: TaskState) {
+    this.status = { state };
+    this.updatedAt = new Date();
   }
 
-  updateContent(content: TaskContent): void {
-    (this as any).content = content;
-    (this as any).updatedAt = new Date();
+  updateMetadata(metadata: Record<string, unknown>) {
+    this.metadata = { ...this.metadata, ...metadata };
+    this.updatedAt = new Date();
   }
 
-  updateMetadata(metadata: Record<string, unknown>): void {
-    (this as any).metadata = { ...this.metadata, ...metadata };
-    (this as any).updatedAt = new Date();
-  }
-
-  toJSON(): TaskType {
+  toJSON() {
     return {
       id: this.id,
       status: this.status,
-      content: this.content,
       metadata: this.metadata,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,

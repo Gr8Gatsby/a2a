@@ -1,6 +1,6 @@
 {
   "name": "a2a",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,7 +8,7 @@
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "bump-version": "node scripts/bump-version.js",
-    "prepare-npm": "npm run build && node scripts/prepare-npm.js",
+    "prepare-npm": "npm run test:coverage && npm run build && node scripts/prepare-npm.js",
     "publish-npm": "npm run prepare-npm && cd tatou && npm publish",
     "link-local": "npm run prepare-npm && cd tatou && npm link && cd .. && echo '\n✅ Package linked! You can now run \"npm link tatou\" in your test project\n'"
   },

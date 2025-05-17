@@ -5,12 +5,19 @@ import { TransportConfigSchema } from '../../src/schemas/transport.schema';
 import { ProtocolRequestSchema, ProtocolResponseSchema } from '../../src/schemas/protocol.schema';
 
 describe('Runtime Validation', () => {
+  const defaultCapabilities = {
+    streaming: true,
+    pushNotifications: false,
+    stateTransitionHistory: true
+  };
+
   it('should validate agent config at runtime (zod)', () => {
     const valid = {
       name: 'TestAgent',
       description: 'A test agent',
-      capabilities: ['text', 'json'],
+      capabilities: defaultCapabilities,
       endpoint: 'https://test.example.com',
+      version: '1.0.0'
     };
     const result = AgentConfigSchema.safeParse(valid);
     expect(result.success).toBe(true);
@@ -18,31 +25,40 @@ describe('Runtime Validation', () => {
     const invalid = {
       name: 'TestAgent',
       description: 'A test agent',
-      capabilities: ['invalid'], // not allowed
-      endpoint: 'not-a-url',
+      capabilities: {
+        streaming: 'not-a-boolean', // invalid type
+        pushNotifications: false,
+        stateTransitionHistory: true
+      },
+      endpoint: 'https://test.example.com',
+      version: '1.0.0'
     };
     const result2 = AgentConfigSchema.safeParse(invalid);
     expect(result2.success).toBe(false);
   });
 
-  it('should reject agent config with empty capabilities', () => {
+  it('should accept agent config with minimal capabilities', () => {
     const config = {
       name: 'TestAgent',
       description: 'A test agent',
-      capabilities: [],
+      capabilities: {}, // all capabilities optional
       endpoint: 'https://test.example.com',
+      version: '1.0.0'
     };
     const result = AgentConfigSchema.safeParse(config);
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
-  it('should reject agent config with extra fields', () => {
+  it('should reject agent config with extra capability fields', () => {
     const config = {
       name: 'TestAgent',
       description: 'A test agent',
-      capabilities: ['text'],
+      capabilities: {
+        ...defaultCapabilities,
+        extraCapability: true // not allowed
+      },
       endpoint: 'https://test.example.com',
-      extra: 'not allowed',
+      version: '1.0.0'
     };
     const result = AgentConfigSchema.safeParse(config);
     expect(result.success).toBe(false);
@@ -52,8 +68,9 @@ describe('Runtime Validation', () => {
     const config = {
       name: null,
       description: undefined,
-      capabilities: ['text'],
+      capabilities: defaultCapabilities,
       endpoint: 'https://test.example.com',
+      version: '1.0.0'
     };
     const result = AgentConfigSchema.safeParse(config);
     expect(result.success).toBe(false);
@@ -144,5 +161,68 @@ describe('Runtime Validation', () => {
     };
     const result3 = ProtocolResponseSchema.safeParse(invalid);
     expect(result3.success).toBe(false);
+  });
+
+  it('should validate agent config with skills', () => {
+    const config = {
+      name: 'TestAgent',
+      description: 'A test agent',
+      capabilities: { streaming: true },
+      endpoint: 'https://test.example.com',
+      version: '1.0.0',
+      skills: [
+        {
+          id: 'summarize-text',
+          name: 'Text Summarizer',
+          description: 'Summarizes input text.',
+          tags: ['nlp', 'summarization'],
+          examples: ['Summarize this article', 'TL;DR for the following text'],
+          inputModes: ['text/plain'],
+          outputModes: ['text/plain']
+        },
+        {
+          id: 'currency-converter',
+          name: 'Currency Converter',
+          tags: ['finance', 'conversion'],
+          examples: ['convert 100 USD to EUR'],
+          inputModes: ['application/json'],
+          outputModes: ['application/json']
+        }
+      ]
+    };
+    const result = AgentConfigSchema.safeParse(config);
+    expect(result.success).toBe(true);
+
+    // Invalid: missing id
+    const invalid = {
+      ...config,
+      skills: [{ name: 'No ID' }]
+    };
+    const result2 = AgentConfigSchema.safeParse(invalid);
+    expect(result2.success).toBe(false);
+  });
+
+  it('should validate agent config with authentication', () => {
+    const config = {
+      name: 'TestAgent',
+      description: 'A test agent',
+      capabilities: { streaming: true },
+      endpoint: 'https://test.example.com',
+      version: '1.0.0',
+      authentication: {
+        schemes: ['OAuth2', 'ApiKey'],
+        credentials: '{"authorizationUrl": "https://auth.example.com", "tokenUrl": "https://token.example.com"}'
+      }
+    };
+    const result = AgentConfigSchema.safeParse(config);
+    expect(result.success).toBe(true);
+
+    // Invalid: missing schemes
+    const invalid = {
+      ...config,
+      authentication: { credentials: '{}' }
+    };
+    const result2 = AgentConfigSchema.safeParse(invalid);
+    expect(result2.success).toBe(false);
   });
 }); 
