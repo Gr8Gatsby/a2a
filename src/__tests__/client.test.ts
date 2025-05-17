@@ -1,8 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { A2AClient } from '../client';
 import { HTTPTransport } from '../transport/http';
-import { Task, TaskStatus, TaskState, TaskPushNotificationConfig, PushNotificationConfig } from '../types/task';
-import { Message, TextPart } from '../types/message';
+import { Task, TaskStatus, TaskPushNotificationConfig } from '../types/task';
+import { TextPart } from '../types/message';
 import { A2AErrorCode } from '../types/errors';
 
 // Mock HTTPTransport

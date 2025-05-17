@@ -9,4 +9,17 @@ export * as Types from './types';
 
 // Top-level exports for protocol and task types
 export * from './types/protocol';
-export * from './types/task'; 
+export * from './types/errors';
+export * from './types/message';
+export * from './types/streaming';
+export * from './types/transport';
+export type {
+  Task as TaskType,
+  TaskStatus,
+  TaskPushNotificationConfig,
+  PushNotificationConfig,
+  TaskState,
+  TaskStatusUpdateEvent,
+  TaskArtifactUpdateEvent
+} from './types/task';
+export type { TaskIdParams as ProtocolTaskIdParams } from './types/protocol'; 

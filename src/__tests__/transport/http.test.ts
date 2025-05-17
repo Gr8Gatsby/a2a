@@ -1,7 +1,6 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
 import { HTTPTransport, HTTPTransportConfig } from '../../transport/http';
 import { ProtocolRequest, ProtocolResponse } from '../../types/protocol';
-import { A2AErrorCode } from '../../types/errors';
 
 describe('HTTPTransport', () => {
   let transport: HTTPTransport;

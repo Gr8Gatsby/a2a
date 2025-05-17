@@ -1,9 +1,23 @@
 /**
- * Agent capabilities interface
+ * Agent capabilities as defined in the A2A spec
  */
 export interface AgentCapabilities {
+  /**
+   * If true, the agent supports tasks/sendSubscribe and tasks/resubscribe for real-time updates via SSE
+   * @default false
+   */
   streaming?: boolean;
+  
+  /**
+   * If true, the agent supports tasks/pushNotification/set and tasks/pushNotification/get for async updates
+   * @default false
+   */
   pushNotifications?: boolean;
+  
+  /**
+   * If true, the agent may include detailed history of status changes within the Task object
+   * @default false
+   */
   stateTransitionHistory?: boolean;
 }
 

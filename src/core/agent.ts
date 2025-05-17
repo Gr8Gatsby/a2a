@@ -96,11 +96,11 @@ export class Agent extends EventEmitter implements AgentType {
 
     const request: ProtocolRequest = {
       jsonrpc: '2.0',
-      id: Date.now(),
+      id: Math.random().toString(36).substring(2, 15),
       method: 'tasks/pushNotification/set',
       params: {
-        id: taskId,
-        ...config
+        ...config,
+        id: taskId
       }
     };
 

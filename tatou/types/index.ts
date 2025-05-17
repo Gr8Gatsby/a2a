@@ -1,5 +1,7 @@
 // Export all type definitions
-export * from './agent';
+export * from './errors';
+export type { Message as TaskMessage } from './message';
+export * from './streaming';
 export * from './task';
 export * from './transport';
-export * from './protocol'; 
+export * from './agent'; 

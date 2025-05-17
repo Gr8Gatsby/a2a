@@ -33,4 +33,64 @@ export interface Task {
 
 // Forward declarations for types defined in other files
 export interface Artifact { /* see artifact.ts */ }
-export interface Message { /* see message.ts */ } 
+export interface Message { /* see message.ts */ }
+
+/**
+ * Authentication configuration for push notifications
+ */
+export interface PushNotificationAuth {
+  schemes: string[];
+  credentials?: string | null;
+}
+
+/**
+ * PushNotificationConfig Object (A2A 6.8)
+ */
+export interface PushNotificationConfig {
+  url: string;
+  token?: string | null;
+  authentication?: AuthenticationInfo | null;
+}
+
+/**
+ * AuthenticationInfo Object (A2A 6.9)
+ */
+export interface AuthenticationInfo {
+  schemes: string[];
+  credentials?: string | null;
+}
+
+/**
+ * TaskPushNotificationConfig Object (A2A 6.10)
+ */
+export interface TaskPushNotificationConfig {
+  id: string;
+  pushNotificationConfig: PushNotificationConfig | null;
+}
+
+/**
+ * Parameters for tasks/cancel and tasks/pushNotification/get
+ */
+export interface TaskIdParams {
+  id: string;
+  metadata?: Record<string, any> | null;
+}
+
+/**
+ * TaskStatusUpdateEvent Object (A2A 7.2.2)
+ */
+export interface TaskStatusUpdateEvent {
+  id: string;
+  status: TaskStatus;
+  final?: boolean;
+  metadata?: Record<string, any> | null;
+}
+
+/**
+ * TaskArtifactUpdateEvent Object (A2A 7.2.3)
+ */
+export interface TaskArtifactUpdateEvent {
+  id: string;
+  artifact: Artifact;
+  metadata?: Record<string, any> | null;
+} 

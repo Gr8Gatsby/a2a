@@ -13,7 +13,11 @@ export type ProtocolMethod =
   | 'tasks/cancel'
   | 'tasks/pushNotification/set'
   | 'tasks/pushNotification/get'
-  | 'tasks/resubscribe';
+  | 'tasks/resubscribe'
+  | 'startTask'
+  | 'endTask'
+  | 'getTaskStatus'
+  | 'listTasks';
 
 /**
  * Base interface for protocol messages

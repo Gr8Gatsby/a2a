@@ -44,23 +44,6 @@ export interface PushNotificationAuth {
 }
 
 /**
- * Push notification configuration for a task
- */
-export interface TaskPushNotificationConfig {
-  url: string;
-  token: string;
-  authentication?: PushNotificationAuth | null;
-}
-
-/**
- * TaskIdParams for operations that require just a task ID
- */
-export interface TaskIdParams {
-  id: string;
-  metadata?: Record<string, any> | null;
-}
-
-/**
  * PushNotificationConfig Object (A2A 6.8)
  */
 export interface PushNotificationConfig {
@@ -83,6 +66,14 @@ export interface AuthenticationInfo {
 export interface TaskPushNotificationConfig {
   id: string;
   pushNotificationConfig: PushNotificationConfig | null;
+}
+
+/**
+ * Parameters for tasks/cancel and tasks/pushNotification/get
+ */
+export interface TaskIdParams {
+  id: string;
+  metadata?: Record<string, any> | null;
 }
 
 /**
