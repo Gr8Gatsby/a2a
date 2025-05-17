@@ -1,14 +1,17 @@
 {
   "name": "tatou",
-  "version": "0.1.1",
+  "version": "0.2.1",
   "description": "TypeScript implementation of the Agent-to-Agent (A2A) protocol",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "icon": "assets/icon.png",
+  "type": "module",
   "files": [
     "dist",
     "types",
-    "README.md"
+    "README.md",
+    "assets"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -27,4 +30,4 @@
   "publishConfig": {
     "access": "public"
   }
-} 
+}

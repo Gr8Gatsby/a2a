@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import { Agent } from '../../src/core/agent';
 import { Task } from '../../src/core/task';
 import { Transport } from '../../src/core/transport';
@@ -348,5 +348,88 @@ describe('Core Implementation', () => {
   it('should not throw if disconnect is called when already disconnected', async () => {
     const t = new Transport({ protocol: 'ws', host: 'localhost' });
     await expect(t.disconnect()).resolves.toBeUndefined();
+  });
+
+  describe('Transport SSE support', () => {
+    let originalEventSource: any;
+    beforeAll(() => {
+      originalEventSource = global.EventSource;
+    });
+    afterAll(() => {
+      global.EventSource = originalEventSource;
+    });
+
+    it('should connect and disconnect with SSE', async () => {
+      let addListenerCalled = false;
+      let removeListenerCalled = false;
+      class FakeEventSource {
+        addEventListener(event: string, cb: any) { addListenerCalled = true; }
+        removeEventListener(event: string, cb: any) { removeListenerCalled = true; }
+        close() { }
+      }
+      // @ts-ignore
+      global.EventSource = FakeEventSource;
+      const t = new Transport({ protocol: 'sse', host: 'localhost' });
+      await t.connect();
+      await t.disconnect();
+      expect(addListenerCalled).toBe(true);
+      expect(removeListenerCalled).toBe(true);
+    });
+
+    it('should receive and parse SSE messages', async () => {
+      let listener: ((event: any) => void) | null = null;
+      class FakeEventSource {
+        addEventListener(event: string, cb: any) { listener = cb; }
+        removeEventListener() { }
+        close() { }
+      }
+      // @ts-ignore
+      global.EventSource = FakeEventSource;
+      const t = new Transport({ protocol: 'sse', host: 'localhost' });
+      await t.connect();
+      // Simulate receiving a message
+      const receivePromise = t.receive();
+      listener!({ data: JSON.stringify({ foo: 'bar' }) });
+      await expect(receivePromise).resolves.toEqual({ foo: 'bar' });
+      await t.disconnect();
+    });
+
+    it('should reject on invalid JSON in SSE message', async () => {
+      let listener: ((event: any) => void) | null = null;
+      class FakeEventSource {
+        addEventListener(event: string, cb: any) { listener = cb; }
+        removeEventListener() { }
+        close() { }
+      }
+      // @ts-ignore
+      global.EventSource = FakeEventSource;
+      const t = new Transport({ protocol: 'sse', host: 'localhost' });
+      await t.connect();
+      const receivePromise = t.receive();
+      listener!({ data: 'not-json' });
+      await expect(receivePromise).rejects.toThrow();
+      await t.disconnect();
+    });
+
+    it('should throw if send is called for SSE', async () => {
+      class FakeEventSource {
+        addEventListener() { }
+        removeEventListener() { }
+        close() { }
+      }
+      // @ts-ignore
+      global.EventSource = FakeEventSource;
+      const t = new Transport({ protocol: 'sse', host: 'localhost' });
+      await t.connect();
+      await expect(t.send({} as any)).rejects.toThrow('SSE transport does not support sending messages from client to server');
+      await t.disconnect();
+    });
+
+    it('should throw if EventSource is not available', async () => {
+      // @ts-ignore
+      global.EventSource = undefined;
+      const t = new Transport({ protocol: 'sse', host: 'localhost' });
+      await expect(t.connect()).rejects.toThrow('EventSource is not available in this environment');
+    });
   });
 }); 

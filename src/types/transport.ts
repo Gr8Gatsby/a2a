@@ -1,7 +1,7 @@
 /**
  * Represents the transport protocol used for communication
  */
-export type TransportProtocol = 'http' | 'https' | 'ws' | 'wss';
+export type TransportProtocol = 'http' | 'https' | 'ws' | 'wss' | 'sse';
 
 /**
  * Configuration for transport layer
