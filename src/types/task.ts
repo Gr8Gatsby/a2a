@@ -58,4 +58,48 @@ export interface TaskPushNotificationConfig {
 export interface TaskIdParams {
   id: string;
   metadata?: Record<string, any> | null;
+}
+
+/**
+ * PushNotificationConfig Object (A2A 6.8)
+ */
+export interface PushNotificationConfig {
+  url: string;
+  token?: string | null;
+  authentication?: AuthenticationInfo | null;
+}
+
+/**
+ * AuthenticationInfo Object (A2A 6.9)
+ */
+export interface AuthenticationInfo {
+  schemes: string[];
+  credentials?: string | null;
+}
+
+/**
+ * TaskPushNotificationConfig Object (A2A 6.10)
+ */
+export interface TaskPushNotificationConfig {
+  id: string;
+  pushNotificationConfig: PushNotificationConfig | null;
+}
+
+/**
+ * TaskStatusUpdateEvent Object (A2A 7.2.2)
+ */
+export interface TaskStatusUpdateEvent {
+  id: string;
+  status: TaskStatus;
+  final?: boolean;
+  metadata?: Record<string, any> | null;
+}
+
+/**
+ * TaskArtifactUpdateEvent Object (A2A 7.2.3)
+ */
+export interface TaskArtifactUpdateEvent {
+  id: string;
+  artifact: Artifact;
+  metadata?: Record<string, any> | null;
 } 

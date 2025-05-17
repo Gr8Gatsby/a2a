@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { TaskStatusSchema } from './task.schema';
+import { ArtifactSchema } from './artifact.schema';
 
 export const ProtocolVersionSchema = z.literal('1.0.0');
 
@@ -30,4 +32,44 @@ export const ProtocolResponseSchema = z.object({
       data: z.unknown().optional(),
     })
     .optional(),
-}); 
+});
+
+export const JSONRPCErrorSchema = z.object({
+  code: z.number(),
+  message: z.string(),
+  data: z.any().optional(),
+});
+
+export const TaskStatusUpdateEventSchema = z.object({
+  id: z.string(),
+  status: TaskStatusSchema,
+  final: z.boolean().optional(),
+  metadata: z.record(z.any()).nullable().optional(),
+});
+
+export const TaskArtifactUpdateEventSchema = z.object({
+  id: z.string(),
+  artifact: ArtifactSchema,
+  metadata: z.record(z.any()).nullable().optional(),
+});
+
+export const SendTaskStreamingResponseSchema = z.union([
+  z.object({
+    jsonrpc: z.literal('2.0'),
+    id: z.union([z.string(), z.number()]),
+    result: TaskStatusUpdateEventSchema,
+    error: z.null().optional(),
+  }),
+  z.object({
+    jsonrpc: z.literal('2.0'),
+    id: z.union([z.string(), z.number()]),
+    result: TaskArtifactUpdateEventSchema,
+    error: z.null().optional(),
+  }),
+  z.object({
+    jsonrpc: z.literal('2.0'),
+    id: z.union([z.string(), z.number()]),
+    error: JSONRPCErrorSchema,
+    result: z.undefined().optional(),
+  }),
+]); 
