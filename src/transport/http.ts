@@ -1,8 +1,8 @@
-import { ProtocolRequest, ProtocolResponse, ProtocolMethod } from '../types/protocol';
-import { SSEConnection, SSEOptions, SSEEventHandler } from '../types/streaming';
-import { A2AErrorCode, createA2AError } from '../types/errors';
-import { validateResponse } from '../validation/schemas';
-import { TransportSecurity, AuthenticationManager, InputSanitizer } from '../security/transport';
+import { ProtocolRequest, ProtocolResponse, ProtocolMethod } from '../types/protocol.js';
+import { SSEConnection, SSEOptions, SSEEventHandler } from '../types/streaming.js';
+import { A2AErrorCode, createA2AError } from '../types/errors.js';
+import { validateResponse } from '../validation/schemas.js';
+import { TransportSecurity, AuthenticationManager, InputSanitizer } from '../security/transport.js';
 
 /**
  * HTTP transport configuration

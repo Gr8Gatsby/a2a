@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { ArtifactSchema } from './artifact.schema';
-import { MessageSchema } from './message.schema';
+import { ArtifactSchema } from './artifact.schema.js';
+import { MessageSchema } from './message.schema.js';
 
 export const TaskContentTypeSchema = z.enum(['text', 'json', 'binary']);
 

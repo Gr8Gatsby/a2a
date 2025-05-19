@@ -1,4 +1,4 @@
-import { A2AErrorCode, createA2AError } from '../types/errors';
+import { A2AErrorCode, createA2AError } from '../types/errors.js';
 
 /**
  * Transport security configuration

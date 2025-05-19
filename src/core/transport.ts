@@ -1,5 +1,5 @@
-import { Transport as TransportType, TransportConfig, TransportProtocol } from '../types/transport';
-import { ProtocolRequest, ProtocolResponse } from '../types/protocol';
+import { Transport as TransportType, TransportConfig, TransportProtocol } from '../types/transport.js';
+import { ProtocolRequest, ProtocolResponse } from '../types/protocol.js';
 
 // For Node.js, use the 'eventsource' package if needed
 let EventSourceImpl: typeof EventSource | undefined = undefined;

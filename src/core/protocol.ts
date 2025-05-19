@@ -1,4 +1,4 @@
-import { ProtocolRequest, ProtocolResponse, ProtocolMethod } from '../types/protocol';
+import { ProtocolRequest, ProtocolResponse, ProtocolMethod } from '../types/protocol.js';
 
 export class Protocol {
   static createRequest(method: ProtocolMethod, params: unknown): ProtocolRequest {

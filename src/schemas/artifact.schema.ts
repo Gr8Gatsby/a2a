@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PartSchema } from './message.schema';
+import { PartSchema } from './message.schema.js';
 
 export const ArtifactSchema = z.object({
   name: z.string().nullable().optional(),

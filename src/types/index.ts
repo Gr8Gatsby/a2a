@@ -1,7 +1,7 @@
 // Export all type definitions
-export * from './errors';
-export type { Message as TaskMessage } from './message';
-export * from './streaming';
-export * from './task';
-export * from './transport';
-export * from './agent'; 
+export * from './errors.js';
+export type { Message as TaskMessage } from './message.js';
+export * from './streaming.js';
+export * from './task.js';
+export * from './transport.js';
+export * from './agent.js'; 

@@ -1,4 +1,4 @@
-import { SendTaskStreamingResponse } from './protocol';
+import { SendTaskStreamingResponse } from './protocol.js';
 
 /**
  * SSE event types for A2A streaming

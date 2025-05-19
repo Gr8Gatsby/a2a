@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { TaskStatusSchema } from './task.schema';
-import { ArtifactSchema } from './artifact.schema';
+import { TaskStatusSchema } from './task.schema.js';
+import { ArtifactSchema } from './artifact.schema.js';
 
 export const ProtocolVersionSchema = z.literal('1.0.0');
 

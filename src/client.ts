@@ -1,8 +1,8 @@
-import { ProtocolRequest, ProtocolResponse, ProtocolMethod, TaskSendParams, TaskQueryParams, TaskIdParams } from './types/protocol';
-import { HTTPTransport, HTTPTransportConfig } from './transport/http';
-import { SSEConnection, SSEOptions } from './types/streaming';
-import { Task, TaskStatus, TaskPushNotificationConfig } from './types/task';
-import { A2AErrorCode, createA2AError } from './types/errors';
+import { ProtocolRequest, ProtocolResponse, ProtocolMethod, TaskSendParams, TaskQueryParams, TaskIdParams } from './types/protocol.js';
+import { HTTPTransport, HTTPTransportConfig } from './transport/http.js';
+import { SSEConnection, SSEOptions } from './types/streaming.js';
+import { Task, TaskStatus, TaskPushNotificationConfig } from './types/task.js';
+import { A2AErrorCode, createA2AError } from './types/errors.js';
 import {
   validateRequest,
   validateResponse,
@@ -10,7 +10,7 @@ import {
   validateTaskQueryParams,
   validateTaskIdParams,
   validateTaskPushNotificationConfig
-} from './validation/schemas';
+} from './validation/schemas.js';
 
 /**
  * A2A client configuration

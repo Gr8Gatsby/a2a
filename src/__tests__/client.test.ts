@@ -1,9 +1,9 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { A2AClient } from '../client';
-import { HTTPTransport } from '../transport/http';
-import { Task, TaskStatus, TaskPushNotificationConfig } from '../types/task';
-import { TextPart } from '../types/message';
-import { A2AErrorCode } from '../types/errors';
+import { A2AClient } from '../client.js';
+import { HTTPTransport } from '../transport/http.js';
+import { Task, TaskStatus, TaskPushNotificationConfig } from '../types/task.js';
+import { TextPart } from '../types/message.js';
+import { A2AErrorCode } from '../types/errors.js';
 
 // Mock HTTPTransport
 vi.mock('../transport/http', () => ({

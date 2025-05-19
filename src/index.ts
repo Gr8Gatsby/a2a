@@ -1,18 +1,18 @@
 // Export implementations as the default exports
-export { Agent } from './core/agent';
-export { Task } from './core/task';
-export { Transport } from './core/transport';
-export { Protocol } from './core/protocol';
+export { Agent } from './core/agent.js';
+export { Task } from './core/task.js';
+export { Transport } from './core/transport.js';
+export { Protocol } from './core/protocol.js';
 
 // Re-export types under a /types subpath
 export * as Types from './types';
 
 // Top-level exports for protocol and task types
-export * from './types/protocol';
-export * from './types/errors';
-export * from './types/message';
-export * from './types/streaming';
-export * from './types/transport';
+export * from './types/protocol.js';
+export * from './types/errors.js';
+export * from './types/message.js';
+export * from './types/streaming.js';
+export * from './types/transport.js';
 export type {
   Task as TaskType,
   TaskStatus,
@@ -21,5 +21,5 @@ export type {
   TaskState,
   TaskStatusUpdateEvent,
   TaskArtifactUpdateEvent
-} from './types/task';
-export type { TaskIdParams as ProtocolTaskIdParams } from './types/protocol'; 
+} from './types/task.js';
+export type { TaskIdParams as ProtocolTaskIdParams } from './types/protocol.js'; 

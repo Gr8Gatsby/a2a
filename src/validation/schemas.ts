@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ProtocolMethod } from '../types/protocol';
+import { ProtocolMethod } from '../types/protocol.js';
 
 /**
  * Base JSON-RPC request schema

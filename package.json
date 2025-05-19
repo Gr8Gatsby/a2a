@@ -1,16 +1,18 @@
 {
   "name": "a2a",
-  "version": "0.3.5",
+  "version": "0.3.7",
   "description": "Agent2Agent Protocol Implementation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
     "build": "tsc && tsc-alias",
+    "fix-import-extensions": "node scripts/codemod-add-js-extensions.js",
+    "fix-dist-directory-imports": "node scripts/fix-dist-directory-imports.js",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "bump-version": "node scripts/bump-version.js",
-    "prepare-npm": "npm run build && node scripts/prepare-npm.js",
+    "prepare-npm": "npm run fix-import-extensions && npm run build && npm run fix-dist-directory-imports && node scripts/prepare-npm.js",
     "publish-npm": "npm run prepare-npm && cd tatou && npm publish",
     "link-local": "npm run prepare-npm && cd tatou && npm link && cd .. && echo '\n✅ Package linked! You can now run \"npm link tatou\" in your test project\n'"
   },

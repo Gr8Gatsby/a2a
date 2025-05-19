@@ -1,4 +1,4 @@
-import { Task as TaskType, TaskStatus, TaskState, TaskPushNotificationConfig } from '../types/task';
+import { Task as TaskType, TaskStatus, TaskState, TaskPushNotificationConfig } from '../types/task.js';
 
 export class Task implements TaskType {
   readonly id: string;

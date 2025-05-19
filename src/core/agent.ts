@@ -1,6 +1,6 @@
 import { Agent as AgentType, AgentConfig, Task, AgentCapabilities, TaskPushNotificationConfig } from '../types';
-import { Transport } from '../types/transport';
-import { ProtocolRequest, ProtocolResponse } from '../types/protocol';
+import { Transport } from '../types/transport.js';
+import { ProtocolRequest, ProtocolResponse } from '../types/protocol.js';
 import { EventEmitter } from 'events';
 
 export class Agent extends EventEmitter implements AgentType {

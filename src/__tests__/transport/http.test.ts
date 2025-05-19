@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
-import { HTTPTransport, HTTPTransportConfig } from '../../transport/http';
-import { ProtocolRequest, ProtocolResponse } from '../../types/protocol';
+import { HTTPTransport, HTTPTransportConfig } from '../../transport/http.js';
+import { ProtocolRequest, ProtocolResponse } from '../../types/protocol.js';
 
 describe('HTTPTransport', () => {
   let transport: HTTPTransport;

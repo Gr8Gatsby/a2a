@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
-import { TransportSecurity, AuthenticationManager, InputSanitizer } from '../transport';
+import { TransportSecurity, AuthenticationManager, InputSanitizer } from '../transport.js';
 
 describe('TransportSecurity', () => {
   let transportSecurity: TransportSecurity;

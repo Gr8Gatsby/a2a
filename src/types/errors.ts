@@ -1,4 +1,4 @@
-import { JSONRPCError } from './protocol';
+import { JSONRPCError } from './protocol.js';
 
 /**
  * A2A-specific error codes (A2A 8.2)
