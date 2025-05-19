@@ -23,5 +23,5 @@
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "tatou", "tests"]
+  "exclude": ["node_modules", "tatou", "tests", "**/__tests__/**"]
 } 
