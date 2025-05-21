@@ -20,6 +20,7 @@ export type {
   PushNotificationConfig,
   TaskState,
   TaskStatusUpdateEvent,
-  TaskArtifactUpdateEvent
+  TaskArtifactUpdateEvent,
+  TaskStates
 } from './types/task.js';
 export type { TaskIdParams as ProtocolTaskIdParams } from './types/protocol.js'; 

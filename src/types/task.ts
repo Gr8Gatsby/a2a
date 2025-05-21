@@ -1,14 +1,18 @@
 /**
  * TaskState Enum (A2A 6.3)
  */
-export type TaskState =
-  | 'submitted'
-  | 'working'
-  | 'input-required'
-  | 'completed'
-  | 'canceled'
-  | 'failed'
-  | 'unknown';
+export const TaskStates = {
+  Pending: 'pending',
+  Submitted: 'submitted',
+  Working: 'working',
+  InputRequired: 'input-required',
+  Completed: 'completed',
+  Canceled: 'canceled',
+  Failed: 'failed',
+  Unknown: 'unknown',
+} as const;
+
+export type TaskState = typeof TaskStates[keyof typeof TaskStates];
 
 /**
  * TaskStatus Object (A2A 6.2)
