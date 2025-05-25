@@ -28,6 +28,7 @@ export interface TaskStatus {
  */
 export interface Task {
   id: string;
+  contextId: string;
   sessionId?: string | null;
   status: TaskStatus;
   artifacts?: Artifact[] | null;

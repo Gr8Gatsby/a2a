@@ -20,7 +20,8 @@ describe('Protocol Data Object Schemas', () => {
 
   it('validates Task', () => {
     const valid = {
-      id: 'abc',
+      id: 'task-48247b9e-8494-4fa4-8d43-1b16c169030f',
+      contextId: 'ctx-48247b9e-8494-4fa4-8d43-1b16c169030f',
       status: { state: 'completed' },
       artifacts: null,
       history: null,
@@ -71,6 +72,7 @@ describe('Protocol Data Object Schemas', () => {
 
   it('validates Artifact', () => {
     const valid = {
+      id: 'artifact-48247b9e-8494-4fa4-8d43-1b16c169030f',
       name: 'Report',
       description: 'desc',
       parts: [{ type: 'text', text: 'done' }],

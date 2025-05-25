@@ -32,7 +32,8 @@ export const TaskStatusSchema = z.object({
 });
 
 export const TaskSchema = z.object({
-  id: z.string(),
+  id: z.string().regex(/^task-[0-9a-fA-F-]{36}$/),
+  contextId: z.string().regex(/^ctx-[0-9a-fA-F-]{36}$/),
   sessionId: z.string().nullable().optional(),
   status: TaskStatusSchema,
   artifacts: z.array(z.lazy(() => ArtifactSchema)).nullable().optional(),
