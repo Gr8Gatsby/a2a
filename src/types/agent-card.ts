@@ -2,8 +2,10 @@
  * AgentProvider Object (A2A 5.5.1)
  */
 export interface AgentProvider {
+  /** Name of the organization or entity. */
   organization: string;
-  url?: string | null;
+  /** URL for the provider's organization website or relevant contact page. */
+  url: string;
 }
 
 /**
@@ -13,6 +15,13 @@ export interface AgentCapabilities {
   streaming?: boolean;
   pushNotifications?: boolean;
   stateTransitionHistory?: boolean;
+}
+
+/**
+ * SecurityScheme Object (A2A 5.5.5, generic for now)
+ */
+export interface SecurityScheme {
+  [key: string]: unknown;
 }
 
 /**
@@ -27,28 +36,50 @@ export interface AgentAuthentication {
  * AgentSkill Object (A2A 5.5.4)
  */
 export interface AgentSkill {
+  /** Unique identifier for this skill within the agent. */
   id: string;
+  /** Human-readable name of the skill. */
   name: string;
-  description?: string | null;
-  tags?: string[] | null;
-  examples?: string[] | null;
-  inputModes?: string[] | null;
-  outputModes?: string[] | null;
+  /** Detailed description of the skill. */
+  description: string;
+  /** Array of keywords or categories for discoverability. */
+  tags: string[];
+  /** Example prompts, inputs, or use cases. */
+  examples?: string[];
+  /** Overrides agentCard.defaultInputModes for this skill. */
+  inputModes?: string[];
+  /** Overrides agentCard.defaultOutputModes for this skill. */
+  outputModes?: string[];
 }
 
 /**
  * AgentCard Object (A2A 5.5)
  */
 export interface AgentCard {
+  /** Human-readable name of the agent. */
   name: string;
-  description?: string | null;
+  /** Human-readable description of the agent. */
+  description: string;
+  /** The base URL endpoint for the agent's A2A service. */
   url: string;
-  provider?: AgentProvider | null;
+  /** Information about the organization or entity providing the agent. */
+  provider?: AgentProvider;
+  /** Version string for the agent or its A2A implementation. */
   version: string;
-  documentationUrl?: string | null;
+  /** URL pointing to human-readable documentation for the agent. */
+  documentationUrl?: string;
+  /** Specifies optional A2A protocol features supported by this agent. */
   capabilities: AgentCapabilities;
-  authentication?: AgentAuthentication | null;
-  defaultInputModes?: string[];
-  defaultOutputModes?: string[];
+  /** Security scheme details used for authenticating with this agent. */
+  securitySchemes: { [scheme: string]: SecurityScheme };
+  /** Security requirements for contacting the agent. */
+  security: { [scheme: string]: string[] }[];
+  /** Array of MIME types the agent generally accepts as input. */
+  defaultInputModes: string[];
+  /** Array of MIME types the agent generally produces as output. */
+  defaultOutputModes: string[];
+  /** An array of specific skills or capabilities the agent offers. */
   skills: AgentSkill[];
+  /** If true, the agent provides an authenticated extended card endpoint. */
+  supportsAuthenticatedExtendedCard?: boolean;
 } 

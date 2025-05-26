@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { AgentConfigSchema } from '../../src/schemas/agentConfig.schema';
+import { AgentCardSchema } from '../../src/schemas/agentConfig.schema';
 import { TaskConfigSchema } from '../../src/schemas/task.schema';
 import { TransportConfigSchema } from '../../src/schemas/transport.schema';
 import { ProtocolRequestSchema, ProtocolResponseSchema } from '../../src/schemas/protocol.schema';
@@ -10,30 +10,54 @@ describe('Runtime Validation', () => {
     pushNotifications: false,
     stateTransitionHistory: true
   };
+  const defaultProvider = {
+    organization: 'TestOrg',
+    url: 'https://testorg.example.com'
+  };
+  const defaultSecuritySchemes = {
+    testScheme: {
+      type: 'apiKey',
+      in: 'header',
+      name: 'Authorization'
+    }
+  };
+  const defaultSecurity = [{ testScheme: [] }];
+  const defaultDocUrl = 'https://docs.example.com';
 
   it('should validate agent config at runtime (zod)', () => {
     const valid = {
       name: 'TestAgent',
       description: 'A test agent',
+      provider: defaultProvider,
+      documentationUrl: defaultDocUrl,
       capabilities: defaultCapabilities,
-      endpoint: 'https://test.example.com',
-      version: '1.0.0'
+      url: 'https://test.example.com',
+      version: '1.0.0',
+      securitySchemes: defaultSecuritySchemes,
+      security: defaultSecurity,
+      defaultInputModes: ['application/json'],
+      defaultOutputModes: ['application/json'],
+      skills: [
+        {
+          id: 'test-skill',
+          name: 'Test Skill',
+          description: 'A skill for testing',
+          tags: ['test']
+        }
+      ]
     };
-    const result = AgentConfigSchema.safeParse(valid);
+    const result = AgentCardSchema.safeParse(valid);
     expect(result.success).toBe(true);
 
     const invalid = {
-      name: 'TestAgent',
-      description: 'A test agent',
+      ...valid,
       capabilities: {
         streaming: 'not-a-boolean', // invalid type
         pushNotifications: false,
         stateTransitionHistory: true
-      },
-      endpoint: 'https://test.example.com',
-      version: '1.0.0'
+      }
     };
-    const result2 = AgentConfigSchema.safeParse(invalid);
+    const result2 = AgentCardSchema.safeParse(invalid);
     expect(result2.success).toBe(false);
   });
 
@@ -41,11 +65,25 @@ describe('Runtime Validation', () => {
     const config = {
       name: 'TestAgent',
       description: 'A test agent',
+      provider: defaultProvider,
+      documentationUrl: defaultDocUrl,
       capabilities: {}, // all capabilities optional
-      endpoint: 'https://test.example.com',
-      version: '1.0.0'
+      url: 'https://test.example.com',
+      version: '1.0.0',
+      securitySchemes: defaultSecuritySchemes,
+      security: defaultSecurity,
+      defaultInputModes: ['application/json'],
+      defaultOutputModes: ['application/json'],
+      skills: [
+        {
+          id: 'test-skill',
+          name: 'Test Skill',
+          description: 'A skill for testing',
+          tags: ['test']
+        }
+      ]
     };
-    const result = AgentConfigSchema.safeParse(config);
+    const result = AgentCardSchema.safeParse(config);
     expect(result.success).toBe(true);
   });
 
@@ -53,14 +91,28 @@ describe('Runtime Validation', () => {
     const config = {
       name: 'TestAgent',
       description: 'A test agent',
+      provider: defaultProvider,
+      documentationUrl: defaultDocUrl,
       capabilities: {
         ...defaultCapabilities,
         extraCapability: true // not allowed
       },
-      endpoint: 'https://test.example.com',
-      version: '1.0.0'
+      url: 'https://test.example.com',
+      version: '1.0.0',
+      securitySchemes: defaultSecuritySchemes,
+      security: defaultSecurity,
+      defaultInputModes: ['application/json'],
+      defaultOutputModes: ['application/json'],
+      skills: [
+        {
+          id: 'test-skill',
+          name: 'Test Skill',
+          description: 'A skill for testing',
+          tags: ['test']
+        }
+      ]
     };
-    const result = AgentConfigSchema.safeParse(config);
+    const result = AgentCardSchema.safeParse(config);
     expect(result.success).toBe(false);
   });
 
@@ -68,11 +120,25 @@ describe('Runtime Validation', () => {
     const config = {
       name: null,
       description: undefined,
+      provider: defaultProvider,
+      documentationUrl: defaultDocUrl,
       capabilities: defaultCapabilities,
-      endpoint: 'https://test.example.com',
-      version: '1.0.0'
+      url: 'https://test.example.com',
+      version: '1.0.0',
+      securitySchemes: defaultSecuritySchemes,
+      security: defaultSecurity,
+      defaultInputModes: ['application/json'],
+      defaultOutputModes: ['application/json'],
+      skills: [
+        {
+          id: 'test-skill',
+          name: 'Test Skill',
+          description: 'A skill for testing',
+          tags: ['test']
+        }
+      ]
     };
-    const result = AgentConfigSchema.safeParse(config);
+    const result = AgentCardSchema.safeParse(config);
     expect(result.success).toBe(false);
   });
 
@@ -167,9 +233,15 @@ describe('Runtime Validation', () => {
     const config = {
       name: 'TestAgent',
       description: 'A test agent',
+      provider: defaultProvider,
+      documentationUrl: defaultDocUrl,
       capabilities: { streaming: true },
-      endpoint: 'https://test.example.com',
+      url: 'https://test.example.com',
       version: '1.0.0',
+      securitySchemes: defaultSecuritySchemes,
+      security: defaultSecurity,
+      defaultInputModes: ['application/json'],
+      defaultOutputModes: ['application/json'],
       skills: [
         {
           id: 'summarize-text',
@@ -183,6 +255,7 @@ describe('Runtime Validation', () => {
         {
           id: 'currency-converter',
           name: 'Currency Converter',
+          description: 'Converts currency values.',
           tags: ['finance', 'conversion'],
           examples: ['convert 100 USD to EUR'],
           inputModes: ['application/json'],
@@ -190,15 +263,15 @@ describe('Runtime Validation', () => {
         }
       ]
     };
-    const result = AgentConfigSchema.safeParse(config);
+    const result = AgentCardSchema.safeParse(config);
     expect(result.success).toBe(true);
 
     // Invalid: missing id
     const invalid = {
       ...config,
-      skills: [{ name: 'No ID' }]
+      skills: [{ name: 'No ID', description: 'desc', tags: ['test'] }]
     };
-    const result2 = AgentConfigSchema.safeParse(invalid);
+    const result2 = AgentCardSchema.safeParse(invalid);
     expect(result2.success).toBe(false);
   });
 
@@ -206,23 +279,30 @@ describe('Runtime Validation', () => {
     const config = {
       name: 'TestAgent',
       description: 'A test agent',
+      provider: defaultProvider,
+      documentationUrl: defaultDocUrl,
       capabilities: { streaming: true },
-      endpoint: 'https://test.example.com',
+      url: 'https://test.example.com',
       version: '1.0.0',
-      authentication: {
-        schemes: ['OAuth2', 'ApiKey'],
-        credentials: '{"authorizationUrl": "https://auth.example.com", "tokenUrl": "https://token.example.com"}'
-      }
+      securitySchemes: defaultSecuritySchemes,
+      security: defaultSecurity,
+      defaultInputModes: ['application/json'],
+      defaultOutputModes: ['application/json'],
+      skills: [
+        {
+          id: 'test-skill',
+          name: 'Test Skill',
+          description: 'A skill for testing',
+          tags: ['test']
+        }
+      ]
     };
-    const result = AgentConfigSchema.safeParse(config);
+    const result = AgentCardSchema.safeParse(config);
     expect(result.success).toBe(true);
 
-    // Invalid: missing schemes
-    const invalid = {
-      ...config,
-      authentication: { credentials: '{}' }
-    };
-    const result2 = AgentConfigSchema.safeParse(invalid);
+    // Invalid: missing securitySchemes (now required)
+    const { securitySchemes, ...invalid } = config;
+    const result2 = AgentCardSchema.safeParse(invalid);
     expect(result2.success).toBe(false);
   });
 }); 

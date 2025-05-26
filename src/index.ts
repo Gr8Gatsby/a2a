@@ -25,7 +25,7 @@ export type {
 } from './types/task.js';
 export type { TaskIdParams as ProtocolTaskIdParams } from './types/protocol.js';
 
-export { AgentConfigSchema } from './schemas/agentConfig.schema.js';
+export { AgentCardSchema } from './schemas/agentConfig.schema.js';
 export { TaskStatusSchema, TaskSchema, TaskStateSchema } from './schemas/task.schema.js';
 export { ArtifactSchema } from './schemas/artifact.schema.js';
 export {
