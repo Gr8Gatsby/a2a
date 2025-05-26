@@ -48,9 +48,12 @@ describe('Core Implementation', () => {
 
   it('should handle push notification configuration', () => {
     const pushConfig = {
-      url: 'https://client.example.com/webhook',
-      token: 'secure-token',
-      authentication: { schemes: ['Bearer'] }
+      id: 'push-1',
+      pushNotificationConfig: {
+        url: 'https://client.example.com/webhook',
+        token: 'secure-token',
+        authentication: { schemes: ['Bearer'] }
+      }
     };
 
     // Test constructor with push notification
@@ -498,9 +501,12 @@ describe('Core Implementation', () => {
         send: vi.fn().mockResolvedValue(undefined),
         receive: vi.fn().mockResolvedValue({ 
           result: { 
-            url: 'https://client.example.com/webhook',
-            token: 'secure-token',
-            authentication: { schemes: ['Bearer'] }
+            id: 'push-2',
+            pushNotificationConfig: {
+              url: 'https://client.example.com/webhook',
+              token: 'secure-token',
+              authentication: { schemes: ['Bearer'] }
+            }
           } 
         }),
         config: { protocol: 'ws', host: 'localhost' }
@@ -515,9 +521,12 @@ describe('Core Implementation', () => {
       }, transport);
 
       const config = {
-        url: 'https://client.example.com/webhook',
-        token: 'secure-token',
-        authentication: { schemes: ['Bearer'] }
+        id: 'push-2',
+        pushNotificationConfig: {
+          url: 'https://client.example.com/webhook',
+          token: 'secure-token',
+          authentication: { schemes: ['Bearer'] }
+        }
       };
 
       const result = await agent.setPushNotification('task-1', config);
@@ -526,9 +535,12 @@ describe('Core Implementation', () => {
 
     it('should get push notification config for a task', async () => {
       const config = {
-        url: 'https://client.example.com/webhook',
-        token: 'secure-token',
-        authentication: { schemes: ['Bearer'] }
+        id: 'push-3',
+        pushNotificationConfig: {
+          url: 'https://client.example.com/webhook',
+          token: 'secure-token',
+          authentication: { schemes: ['Bearer'] }
+        }
       };
 
       const transport = {
@@ -569,8 +581,11 @@ describe('Core Implementation', () => {
       }, transport);
 
       const config = {
-        url: 'https://client.example.com/webhook',
-        token: 'secure-token'
+        id: 'push-4',
+        pushNotificationConfig: {
+          url: 'https://client.example.com/webhook',
+          token: 'secure-token'
+        }
       };
 
       await expect(agent.setPushNotification('task-1', config))

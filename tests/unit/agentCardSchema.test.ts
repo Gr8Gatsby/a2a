@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import { AgentCardSchema } from '../../src/schemas/agentConfig.schema.js';
-import type { AgentCard } from '../../src/types/agent-card.js';
 
 const validDir = path.join(__dirname, '../mocks/agent-cards/valid');
 const invalidDir = path.join(__dirname, '../mocks/agent-cards/invalid');
