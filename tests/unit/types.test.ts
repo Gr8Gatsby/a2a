@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type {
   AgentConfig,
-  TransportConfig,
-  AgentCapabilities
+  TransportConfig
 } from '../../src/types';
 import type {
   ProtocolRequest,
@@ -115,11 +114,10 @@ describe('Type Definitions', () => {
     const methods: ProtocolMethod[] = [
       'startTask',
       'endTask',
-      'updateTask',
       'getTaskStatus',
       'listTasks',
     ];
-    expect(methods).toHaveLength(5);
+    expect(methods).toHaveLength(4);
   });
 });
 
@@ -136,8 +134,8 @@ describe('Protocol Types', () => {
 
   it('Artifact: at least one Part required', () => {
     // Valid
-    const artifact1: import('../../src/types/artifact').Artifact = { parts: [{ type: 'text', text: 'hi' }] };
-    const artifact2: import('../../src/types/artifact').Artifact = { parts: [] };
+    const artifact1: import('../../src/types/artifact').Artifact = { id: 'artifact-1', parts: [{ type: 'text', text: 'hi' }] };
+    const artifact2: import('../../src/types/artifact').Artifact = { id: 'artifact-2', parts: [] };
   });
 
   it('TaskStatus: must be object, not string', () => {
